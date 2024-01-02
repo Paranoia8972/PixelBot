@@ -1,0 +1,19 @@
+{
+  "name": "pixelbot",
+  "version": "1.0.0",
+  "description": "The official OnThePixel.net Discord Bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "keywords": [],
+  "author": "Paranoia8972",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/rest": "^2.2.0",
+    "chalk": "^4.1.2",
+    "discord-api-types": "^0.37.67",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1"
+  }
+}
