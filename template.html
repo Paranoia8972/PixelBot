@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transcript</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        background-color: #313338;
+        color: #dcddde;
+        margin: 0;
+      }
+      .title {
+        text-align: left;
+        margin-top: 20px;
+        margin-left: 20px;
+      }
+      .message {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        padding: 10px 20px;
+      }
+      .message.no-padding {
+        margin-top: -30px;
+        padding-left: 70px;
+      }
+      .pfp {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+      .username {
+        font-weight: 600;
+        color: #7289da;
+      }
+      .timestamp {
+        color: #72767d;
+        font-size: 0.75em;
+        margin-left: 5px;
+      }
+      .content {
+        display: flex;
+        flex-direction: column;
+      }
+      .message_content {
+        margin-top: 5px;
+        color: #dcddde;
+      }
+      .message:hover {
+        background-color: #2f3136;
+      }
+      .embed {
+        border-left: 4px solid #7289da;
+        background-color: #2f3136;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+      }
+      .embed-title {
+        font-weight: 600;
+        color: #7289da;
+        margin-bottom: 5px;
+        font: bold 16px/20px Arial, sans-serif;
+      }
+      .embed-description {
+        color: #dcddde;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="title">Transcript</h1>
+    {{.Messages}}
+  </body>
+</html>
