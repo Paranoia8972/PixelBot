@@ -163,8 +163,9 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:        "social",
-			Description: "Manage social updates channel and accounts",
+			Name:                     "social",
+			Description:              "Manage social updates channel and accounts",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "set",
@@ -210,8 +211,9 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:        "ticket",
-			Description: "Manage ticket system",
+			Name:                     "ticket",
+			Description:              "Manage ticket system",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "setup",
@@ -289,8 +291,9 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:        "giveaway",
-			Description: "Manage giveaways",
+			Name:                     "giveaway",
+			Description:              "Manage giveaways",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "create",
@@ -371,8 +374,9 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:        "autorole",
-			Description: "Manage auto roles",
+			Name:                     "autorole",
+			Description:              "Manage auto roles",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageRoles}[0],
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "add",
