@@ -19,6 +19,12 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+var cfg *config.Config
+
+func init() {
+	cfg = config.LoadConfig()
+}
+
 //TODO:
 //TODO: Emojis, Mentions, Attachments, Formatting in Embeds, Interactions (commands, buttons, etc)
 //TODO:
@@ -210,7 +216,7 @@ func formatTimestamp(timestamp string) string {
 }
 
 func getTranscript(id string) ([]byte, error) {
-	collection := db.GetCollection("PixelBot", "tickets")
+	collection := db.GetCollection(cfg.DBName, "tickets")
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err

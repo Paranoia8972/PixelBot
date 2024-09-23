@@ -15,7 +15,7 @@ type WelcomeChannel struct {
 }
 
 func SetWelcomeChannel(guildID, channelID, welcomeMessage string) error {
-	collection := db.GetCollection("PixelBot", "welcome_channels")
+	collection := db.GetCollection(cfg.DBName, "welcome_channels")
 	filter := bson.M{"guild_id": guildID}
 	update := bson.M{"$set": bson.M{"channel_id": channelID, "welcome_message": welcomeMessage}}
 	opts := options.Update().SetUpsert(true)
@@ -24,7 +24,7 @@ func SetWelcomeChannel(guildID, channelID, welcomeMessage string) error {
 }
 
 func GetWelcomeChannel(guildID string) (WelcomeChannel, error) {
-	collection := db.GetCollection("PixelBot", "welcome_channels")
+	collection := db.GetCollection(cfg.DBName, "welcome_channels")
 	filter := bson.M{"guild_id": guildID}
 	var result WelcomeChannel
 	err := collection.FindOne(context.Background(), filter).Decode(&result)
@@ -32,7 +32,7 @@ func GetWelcomeChannel(guildID string) (WelcomeChannel, error) {
 }
 
 func DeleteWelcomeChannel(guildID string) error {
-	collection := db.GetCollection("PixelBot", "welcome_channels")
+	collection := db.GetCollection(cfg.DBName, "welcome_channels")
 	filter := bson.M{"guild_id": guildID}
 	_, err := collection.DeleteOne(context.Background(), filter)
 	return err

@@ -10,7 +10,7 @@ import (
 )
 
 func AddAutoRole(guildID string, roleID string) error {
-	collection := db.GetCollection("PixelBot", "auto_roles")
+	collection := db.GetCollection(cfg.DBName, "auto_roles")
 	filter := bson.M{"guild_id": guildID}
 	update := bson.M{"$addToSet": bson.M{"role_ids": roleID}}
 	opts := options.Update().SetUpsert(true)
@@ -19,7 +19,7 @@ func AddAutoRole(guildID string, roleID string) error {
 }
 
 func GetAutoRoles(guildID string) ([]string, error) {
-	collection := db.GetCollection("PixelBot", "auto_roles")
+	collection := db.GetCollection(cfg.DBName, "auto_roles")
 	filter := bson.M{"guild_id": guildID}
 	var autoRoles struct {
 		RoleIDs []string `bson:"role_ids"`
@@ -35,7 +35,7 @@ func GetAutoRoles(guildID string) ([]string, error) {
 }
 
 func RemoveAutoRole(guildID string, roleID string) error {
-	collection := db.GetCollection("PixelBot", "auto_roles")
+	collection := db.GetCollection(cfg.DBName, "auto_roles")
 	filter := bson.M{"guild_id": guildID}
 	update := bson.M{"$pull": bson.M{"role_ids": roleID}}
 	_, err := collection.UpdateOne(context.Background(), filter, update)

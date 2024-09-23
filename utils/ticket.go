@@ -37,7 +37,7 @@ type ModeratorRoles struct {
 }
 
 func SetTicketSetup(guildID, channelID, categoryID, transcriptChannelID string) error {
-	collection := db.GetCollection("PixelBot", "ticket_setup")
+	collection := db.GetCollection(cfg.DBName, "ticket_setup")
 	filter := bson.M{"guild_id": guildID}
 	update := bson.M{"$set": bson.M{"channel_id": channelID, "category_id": categoryID, "transcript_channel_id": transcriptChannelID}}
 	opts := options.Update().SetUpsert(true)
@@ -46,7 +46,7 @@ func SetTicketSetup(guildID, channelID, categoryID, transcriptChannelID string) 
 }
 
 func GetTicketSetup(guildID string) (TicketSetup, error) {
-	collection := db.GetCollection("PixelBot", "ticket_setup")
+	collection := db.GetCollection(cfg.DBName, "ticket_setup")
 	filter := bson.M{"guild_id": guildID}
 	var ticketSetup TicketSetup
 	err := collection.FindOne(context.Background(), filter).Decode(&ticketSetup)
@@ -54,7 +54,7 @@ func GetTicketSetup(guildID string) (TicketSetup, error) {
 }
 
 func GetNextTicketNumber(guildID, userID string) (int, error) {
-	collection := db.GetCollection("PixelBot", "user_tickets")
+	collection := db.GetCollection(cfg.DBName, "user_tickets")
 	filter := bson.M{"guild_id": guildID, "user_id": userID}
 	var userTicket UserTicket
 	err := collection.FindOne(context.Background(), filter).Decode(&userTicket)
@@ -68,7 +68,7 @@ func GetNextTicketNumber(guildID, userID string) (int, error) {
 }
 
 func IncrementTicketNumber(guildID, userID string, ticketNum int) error {
-	collection := db.GetCollection("PixelBot", "user_tickets")
+	collection := db.GetCollection(cfg.DBName, "user_tickets")
 	filter := bson.M{"guild_id": guildID, "user_id": userID}
 	update := bson.M{"$set": bson.M{"ticket_num": ticketNum}}
 	opts := options.Update().SetUpsert(true)
@@ -77,7 +77,7 @@ func IncrementTicketNumber(guildID, userID string, ticketNum int) error {
 }
 
 func AddModeratorRoles(guildID string, roleIDs []string) error {
-	collection := db.GetCollection("PixelBot", "moderator_roles")
+	collection := db.GetCollection(cfg.DBName, "moderator_roles")
 	filter := bson.M{"guild_id": guildID}
 	update := bson.M{"$addToSet": bson.M{"role_ids": bson.M{"$each": roleIDs}}}
 	opts := options.Update().SetUpsert(true)
@@ -86,7 +86,7 @@ func AddModeratorRoles(guildID string, roleIDs []string) error {
 }
 
 func GetModeratorRoles(guildID string) ([]string, error) {
-	collection := db.GetCollection("PixelBot", "moderator_roles")
+	collection := db.GetCollection(cfg.DBName, "moderator_roles")
 	filter := bson.M{"guild_id": guildID}
 	var modRoles ModeratorRoles
 	err := collection.FindOne(context.Background(), filter).Decode(&modRoles)
@@ -100,7 +100,7 @@ func GetModeratorRoles(guildID string) ([]string, error) {
 }
 
 func RemoveModeratorRoles(guildID string, roleID string) error {
-	collection := db.GetCollection("PixelBot", "moderator_roles")
+	collection := db.GetCollection(cfg.DBName, "moderator_roles")
 	filter := bson.M{"guild_id": guildID}
 	update := bson.M{"$pull": bson.M{"role": roleID}}
 	_, err := collection.UpdateOne(context.Background(), filter, update)
@@ -108,7 +108,7 @@ func RemoveModeratorRoles(guildID string, roleID string) error {
 }
 
 func StoreTranscript(guildID, userID, channelID string, transcriptJSON []byte) (primitive.ObjectID, error) {
-	collection := db.GetCollection("PixelBot", "tickets")
+	collection := db.GetCollection(cfg.DBName, "tickets")
 	document := Tickets{
 		GuildID:    guildID,
 		UserID:     userID,
