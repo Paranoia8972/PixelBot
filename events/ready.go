@@ -9,11 +9,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Paranoia8972/PixelBot/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
 	"github.com/fogleman/gg"
 	"github.com/nfnt/resize"
-	"github.com/paranoia8972/PixelBot/utils"
 )
 
 func Ready(s *discordgo.Session, r *discordgo.Ready) {

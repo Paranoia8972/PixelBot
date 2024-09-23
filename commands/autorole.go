@@ -3,8 +3,8 @@ package commands
 import (
 	"strings"
 
+	"github.com/Paranoia8972/PixelBot/utils"
 	"github.com/bwmarrin/discordgo"
-	"github.com/paranoia8972/PixelBot/utils"
 )
 
 func AutoRoleCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {

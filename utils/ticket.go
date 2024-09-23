@@ -3,7 +3,7 @@ package utils
 import (
 	"context"
 
-	"github.com/paranoia8972/PixelBot/db"
+	"github.com/Paranoia8972/PixelBot/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

@@ -7,12 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Paranoia8972/PixelBot/commands"
+	"github.com/Paranoia8972/PixelBot/config"
+	"github.com/Paranoia8972/PixelBot/db"
+	"github.com/Paranoia8972/PixelBot/events"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
-	"github.com/paranoia8972/PixelBot/commands"
-	"github.com/paranoia8972/PixelBot/config"
-	"github.com/paranoia8972/PixelBot/db"
-	"github.com/paranoia8972/PixelBot/events"
 )
 
 func main() {

@@ -3,9 +3,9 @@ package commands
 import (
 	"time"
 
+	"github.com/Paranoia8972/PixelBot/config"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
-	"github.com/paranoia8972/PixelBot/config"
 )
 
 func RegisterCommands(s *discordgo.Session, cfg *config.Config) {

@@ -1,4 +1,4 @@
-module github.com/paranoia8972/PixelBot
+module github.com/Paranoia8972/PixelBot
 
 go 1.23
 

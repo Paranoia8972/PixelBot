@@ -3,8 +3,8 @@ package commands
 import (
 	"log"
 
+	"github.com/Paranoia8972/PixelBot/utils"
 	"github.com/bwmarrin/discordgo"
-	"github.com/paranoia8972/PixelBot/utils"
 )
 
 func WelcomeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {

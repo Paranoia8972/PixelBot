@@ -4,9 +4,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/Paranoia8972/PixelBot/config"
 	"github.com/bwmarrin/dgvoice"
 	"github.com/bwmarrin/discordgo"
-	"github.com/paranoia8972/PixelBot/config"
 )
 
 var voiceConnection *discordgo.VoiceConnection
