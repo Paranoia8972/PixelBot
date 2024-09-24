@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Paranoia8972/PixelBot/utils"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
 	"github.com/fogleman/gg"

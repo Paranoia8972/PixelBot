@@ -3,10 +3,16 @@ package commands
 import (
 	"time"
 
-	"github.com/Paranoia8972/PixelBot/config"
+	"github.com/Paranoia8972/PixelBot/internal/app/config"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
 )
+
+var cfg *config.Config
+
+func init() {
+	cfg = config.LoadConfig()
+}
 
 func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 

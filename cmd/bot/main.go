@@ -7,10 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/Paranoia8972/PixelBot/commands"
-	"github.com/Paranoia8972/PixelBot/config"
 	"github.com/Paranoia8972/PixelBot/db"
-	"github.com/Paranoia8972/PixelBot/events"
+	"github.com/Paranoia8972/PixelBot/internal/app/config"
+	"github.com/Paranoia8972/PixelBot/internal/events"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/commands"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
 )

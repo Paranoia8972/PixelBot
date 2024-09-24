@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Paranoia8972/PixelBot/config"
 	"github.com/Paranoia8972/PixelBot/db"
+	"github.com/Paranoia8972/PixelBot/internal/app/config"
 	"github.com/fatih/color"
 	"github.com/russross/blackfriday/v2"
 	"go.mongodb.org/mongo-driver/bson"

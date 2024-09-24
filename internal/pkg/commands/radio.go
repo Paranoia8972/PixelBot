@@ -4,7 +4,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/Paranoia8972/PixelBot/config"
 	"github.com/bwmarrin/dgvoice"
 	"github.com/bwmarrin/discordgo"
 )
@@ -32,7 +31,6 @@ func RadioCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func startRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	cfg := config.LoadConfig()
 	guildID := cfg.GuildID
 	userID := i.Member.User.ID
 

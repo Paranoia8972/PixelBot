@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/Paranoia8972/PixelBot/config"
+	"github.com/Paranoia8972/PixelBot/internal/app/config"
 )
 
 var cfg *config.Config

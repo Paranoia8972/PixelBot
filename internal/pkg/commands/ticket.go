@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Paranoia8972/PixelBot/utils"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
 	"github.com/russross/blackfriday/v2"
 )

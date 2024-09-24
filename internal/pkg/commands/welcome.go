@@ -3,7 +3,7 @@ package commands
 import (
 	"log"
 
-	"github.com/Paranoia8972/PixelBot/utils"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
