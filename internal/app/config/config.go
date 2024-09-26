@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	Token    string
-	GuildID  string
-	MongoURI string
-	DBName   string
-	Port     string
+	Token         string
+	GuildID       string
+	MongoURI      string
+	DBName        string
+	Port          string
+	TranscriptUrl string
 }
 
 var cfg *Config
@@ -24,11 +25,12 @@ func LoadConfig() *Config {
 	}
 
 	cfg = &Config{
-		Token:    os.Getenv("DISCORD_BOT_TOKEN"),
-		GuildID:  os.Getenv("GUILD_ID"),
-		MongoURI: os.Getenv("MONGO_URI"),
-		DBName:   os.Getenv("DB_NAME"),
-		Port:     os.Getenv("SERVER_PORT"),
+		Token:         os.Getenv("DISCORD_BOT_TOKEN"),
+		GuildID:       os.Getenv("GUILD_ID"),
+		MongoURI:      os.Getenv("MONGO_URI"),
+		DBName:        os.Getenv("DB_NAME"),
+		Port:          os.Getenv("SERVER_PORT"),
+		TranscriptUrl: os.Getenv("TRANSCRIPT_URL"),
 	}
 	return cfg
 }

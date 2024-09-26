@@ -418,7 +418,7 @@ func TicketCloseHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				return
 			}
 
-			_, err = s.ChannelMessageSend(channel.ID, fmt.Sprintf("Your ticket "+"`ticket-"+username+"-"+strconv.Itoa(ticketNumber-1)+"` has been closed."+"\n\nHere is your transcript: https://ticket.ecyt.dev/ticket?id="+transcriptID.Hex()))
+			_, err = s.ChannelMessageSend(channel.ID, fmt.Sprintf("Your ticket "+"`ticket-"+username+"-"+strconv.Itoa(ticketNumber-1)+"` has been closed."+"\n\nHere is your transcript: https://"+cfg.TranscriptUrl+"/ticket?id="+transcriptID.Hex()))
 			if err != nil {
 				log.Printf("error sending DM: %v", err)
 				return
