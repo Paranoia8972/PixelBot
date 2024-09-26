@@ -8,14 +8,11 @@ import (
 )
 
 type Config struct {
-	Token                 string
-	GuildID               string
-	MongoURI              string
-	DBName                string
-	TwitterConsumerKey    string
-	TwitterConsumerSecret string
-	TwitterAccessToken    string
-	TwitterAccessSecret   string
+	Token    string
+	GuildID  string
+	MongoURI string
+	DBName   string
+	Port     string
 }
 
 var cfg *Config
@@ -27,14 +24,11 @@ func LoadConfig() *Config {
 	}
 
 	cfg = &Config{
-		Token:                 os.Getenv("DISCORD_BOT_TOKEN"),
-		GuildID:               os.Getenv("GUILD_ID"),
-		MongoURI:              os.Getenv("MONGO_URI"),
-		DBName:                os.Getenv("DB_NAME"),
-		TwitterConsumerKey:    os.Getenv("TWITTER_CONSUMER_KEY"),
-		TwitterConsumerSecret: os.Getenv("TWITTER_CONSUMER_SECRET"),
-		TwitterAccessToken:    os.Getenv("TWITTER_ACCESS_TOKEN"),
-		TwitterAccessSecret:   os.Getenv("TWITTER_ACCESS_SECRET"),
+		Token:    os.Getenv("DISCORD_BOT_TOKEN"),
+		GuildID:  os.Getenv("GUILD_ID"),
+		MongoURI: os.Getenv("MONGO_URI"),
+		DBName:   os.Getenv("DB_NAME"),
+		Port:     os.Getenv("SERVER_PORT"),
 	}
 	return cfg
 }

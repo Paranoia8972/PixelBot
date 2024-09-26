@@ -65,8 +65,8 @@ func main() {
 
 	http.HandleFunc("/ticket", TranscriptServer)
 
-	color.Green("Server is running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	color.Green("Server is running on http://localhost:" + cfg.Port)
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
 }
 
 func TranscriptServer(w http.ResponseWriter, r *http.Request) {
