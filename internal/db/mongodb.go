@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"github.com/fatih/color"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,16 +17,16 @@ func InitMongoDB(uri string) {
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		log.Fatalf("Failed to connect to MongoDB: %v", err)
+		color.Red("Failed to connect to MongoDB: %v", err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.Fatalf("Failed to ping MongoDB: %v", err)
+		color.Yellow("Failed to ping MongoDB: %v", err)
 	}
 
 	MongoClient = client
-	log.Println("Connected to MongoDB")
+	color.Green("Connected to MongoDB")
 }
 
 func GetCollection(database, collection string) *mongo.Collection {
