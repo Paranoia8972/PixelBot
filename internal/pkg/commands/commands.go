@@ -248,51 +248,9 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 					},
 				},
 				{
-					Name:        "addmodrole",
-					Description: "Set the moderator roles",
+					Name:        "send",
+					Description: "Sends a new message with a button to create a ticket",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
-					Options: []*discordgo.ApplicationCommandOption{
-						{
-							Name:        "role",
-							Description: "Role to set as moderator role",
-							Type:        discordgo.ApplicationCommandOptionRole,
-							Required:    true,
-							Options: []*discordgo.ApplicationCommandOption{
-								{
-									Name:        "role",
-									Description: "Role to set as moderator role",
-									Type:        discordgo.ApplicationCommandOptionRole,
-									Required:    true,
-								},
-							},
-						},
-					},
-				},
-				{
-					Name:        "getmodroles",
-					Description: "Get the moderator roles",
-					Type:        discordgo.ApplicationCommandOptionSubCommand,
-				},
-				{
-					Name:        "removemodrole",
-					Description: "Remove the moderator roles",
-					Type:        discordgo.ApplicationCommandOptionSubCommand,
-					Options: []*discordgo.ApplicationCommandOption{
-						{
-							Name:        "role",
-							Description: "Role to remove from moderator roles",
-							Type:        discordgo.ApplicationCommandOptionRole,
-							Required:    true,
-							Options: []*discordgo.ApplicationCommandOption{
-								{
-									Name:        "role",
-									Description: "Role to remove from moderator role",
-									Type:        discordgo.ApplicationCommandOptionRole,
-									Required:    true,
-								},
-							},
-						},
-					},
 				},
 			},
 		},
