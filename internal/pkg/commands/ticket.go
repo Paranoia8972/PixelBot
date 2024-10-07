@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 
 	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
@@ -26,12 +25,8 @@ func TicketCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	switch i.ApplicationCommandData().Options[0].Name {
 	case "setup":
 		TicketSetupCommand(s, i)
-	case "addmodrole":
-		TicketAddModeratorRolesCommand(s, i)
-	case "getmodroles":
-		TicketGetModeratorRolesCommand(s, i)
-	case "removemodrole":
-		TicketRemoveModeratorRolesCommand(s, i)
+	case "send":
+		TicketSendMessage(s, i)
 	default:
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -42,15 +37,20 @@ func TicketCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
+func respondWithMessage(s *discordgo.Session, i *discordgo.InteractionCreate, message string) {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: message,
+			Flags:   64,
+		},
+	})
+}
+
 func TicketSetupCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options[0].Options
 	if len(options) < 2 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Please provide a channel and category.",
-			},
-		})
+		respondWithMessage(s, i, "Please provide a channel and category.")
 		return
 	}
 
@@ -60,21 +60,11 @@ func TicketSetupCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	err := utils.SetTicketSetup(i.GuildID, channelID, categoryID, transcriptChannelID)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to set up ticket system.",
-			},
-		})
+		respondWithMessage(s, i, "Failed to set up ticket system.")
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Ticket system set up successfully!",
-		},
-	})
+	respondWithMessage(s, i, "Ticket system set up successfully!")
 
 	s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 		Content: "Click the button below to create a new ticket.",
@@ -92,19 +82,299 @@ func TicketSetupCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	})
 }
 
-func TicketButtonHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if i.MessageComponentData().CustomID != "create_ticket" {
+func TicketSendMessage(s *discordgo.Session, i *discordgo.InteractionCreate) {
+
+	channelID, err := utils.GetChannelID(i.GuildID)
+	if err != nil {
+		respondWithMessage(s, i, "Error retrieving ChannelID.")
 		return
 	}
 
+	respondWithMessage(s, i, "Ticket message sent successfully!")
+	s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
+		Content: "Select an option below to open a ticket.",
+		Components: []discordgo.MessageComponent{
+			discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{
+					discordgo.SelectMenu{
+						CustomID:    "ticket_menu",
+						Placeholder: "Choose an option",
+						Options: []discordgo.SelectMenuOption{
+							{
+								Label: "Ban Appeal",
+								Value: "ban_appeal",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292525123596714048",
+									Name: "ban",
+								},
+							},
+							{
+								Label: "Team Application",
+								Value: "team_application",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292526428147154994",
+									Name: "team",
+								},
+							},
+							{
+								Label: "Bug Report",
+								Value: "bug_report",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292526495314608252",
+									Name: "bug",
+								},
+							},
+							{
+								Label: "General support",
+								Value: "general_support",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292524894608822343",
+									Name: "support",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+}
+
+func TicketSelectHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	data := i.MessageComponentData()
+	if data.CustomID != "ticket_menu" {
+		log.Println("Error: CustomID does not match 'ticket_menu'")
+		return
+	}
+
+	if len(data.Values) == 0 {
+		log.Println("Error: No values selected in the select menu")
+		return
+	}
+
+	selectedOption := data.Values[0]
+
+	var modal *discordgo.InteractionResponse
+	switch selectedOption {
+	case "ban_appeal":
+		modal = &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseModal,
+			Data: &discordgo.InteractionResponseData{
+				CustomID: "ban_appeal_modal",
+				Title:    "Ban Appeal",
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "ban_appeal_username",
+								Label:       "Please provide your minecraft username",
+								Style:       discordgo.TextInputShort,
+								Placeholder: "Enter your username here...",
+								Required:    true,
+							},
+						},
+					},
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "ban_appeal_details",
+								Label:       "Please provide details about your appeal",
+								Style:       discordgo.TextInputParagraph,
+								Placeholder: "Enter your appeal details here...",
+								Required:    true,
+							},
+						},
+					},
+				},
+			},
+		}
+	case "team_application":
+		modal = &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseModal,
+			Data: &discordgo.InteractionResponseData{
+				CustomID: "team_application_modal",
+				Title:    "Team Application",
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "team_application_role",
+								Label:       "Please provide the role you are applying for",
+								Style:       discordgo.TextInputShort,
+								Placeholder: "Enter the role here...",
+								Required:    true,
+							},
+						},
+					},
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "team_application_details",
+								Label:       "Please provide details about your application",
+								Style:       discordgo.TextInputParagraph,
+								Placeholder: "Enter your application details here...",
+								Required:    true,
+							},
+						},
+					},
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "team_application_links",
+								Label:       "Please provide any relevant links.",
+								Style:       discordgo.TextInputShort,
+								Placeholder: "Enter your links here... (github.com/...)",
+								Required:    false,
+							},
+						},
+					},
+				},
+			},
+		}
+	case "bug_report":
+		modal = &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseModal,
+			Data: &discordgo.InteractionResponseData{
+				CustomID: "bug_report_modal",
+				Title:    "Bug Report",
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "bug_report_title",
+								Label:       "Please provide a title for the bug report",
+								Style:       discordgo.TextInputShort,
+								Placeholder: "Enter the bug title here...",
+								Required:    true,
+							},
+						},
+					},
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "bug_report_details",
+								Label:       "Please describe the bug you encountered",
+								Style:       discordgo.TextInputParagraph,
+								Placeholder: "Enter the bug details here...",
+								Required:    true,
+							},
+						},
+					},
+				},
+			},
+		}
+	case "general_support":
+		modal = &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseModal,
+			Data: &discordgo.InteractionResponseData{
+				CustomID: "general_support_modal",
+				Title:    "General Support",
+				Components: []discordgo.MessageComponent{
+					discordgo.ActionsRow{
+						Components: []discordgo.MessageComponent{
+							discordgo.TextInput{
+								CustomID:    "general_support_details",
+								Label:       "How can we assist you?",
+								Style:       discordgo.TextInputParagraph,
+								Placeholder: "Enter your support request here...",
+								Required:    true,
+							},
+						},
+					},
+				},
+			},
+		}
+	}
+
+	err := s.InteractionRespond(i.Interaction, modal)
+	if err != nil {
+		log.Println("Error responding to interaction:", err)
+	}
+}
+
+func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionModalSubmit {
+		log.Printf("ModalSubmitHandler called with incorrect interaction type: %v", i.Type)
+		return
+	}
+
+	data := i.ModalSubmitData()
+	var embed *discordgo.MessageEmbed
+
+	switch data.CustomID {
+	case "ban_appeal_modal":
+		username := data.Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+		details := data.Components[1].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+
+		embed = &discordgo.MessageEmbed{
+			Title:       "Ban Appeal Submitted",
+			Description: "Your ban appeal has been submitted successfully.",
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:  "Username",
+					Value: username,
+				},
+				{
+					Name:  "Details",
+					Value: details,
+				},
+			},
+		}
+	case "team_application_modal":
+		username := data.Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+		details := data.Components[1].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+
+		embed = &discordgo.MessageEmbed{
+			Title:       "Team Application Submitted",
+			Description: "Your team application has been submitted successfully.",
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:  "Username",
+					Value: username,
+				},
+				{
+					Name:  "Details",
+					Value: details,
+				},
+			},
+		}
+	case "bug_report_modal":
+		title := data.Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+		details := data.Components[1].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+
+		embed = &discordgo.MessageEmbed{
+			Title:       "Bug Report Submitted",
+			Description: "Your bug report has been submitted successfully.",
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:  "Title",
+					Value: title,
+				},
+				{
+					Name:  "Details",
+					Value: details,
+				},
+			},
+		}
+	case "general_support_modal":
+		details := data.Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+
+		embed = &discordgo.MessageEmbed{
+			Title:       "Support Request Submitted",
+			Description: "Your support request has been submitted successfully.",
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:  "Details",
+					Value: details,
+				},
+			},
+		}
+	}
+
+	// Create ticket channel
 	ticketChannel, err := utils.GetTicketSetup(i.GuildID)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to retrieve ticket channel.",
-			},
-		})
+		respondWithMessage(s, i, "Failed to retrieve ticket channel.")
 		return
 	}
 
@@ -113,85 +383,98 @@ func TicketButtonHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	ticketNumber, err := utils.GetNextTicketNumber(i.GuildID, userID)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to retrieve next ticket number.",
-			},
-		})
+		respondWithMessage(s, i, "Failed to retrieve next ticket number.")
 		return
 	}
 
 	channelName := "ticket-" + username + "-" + strconv.Itoa(ticketNumber)
 
-	moderatorRoles, err := utils.GetModeratorRoles(i.GuildID)
-	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to retrieve moderator roles.",
-			},
-		})
-		return
-	}
-
-	permissionOverwrites := []*discordgo.PermissionOverwrite{
-		// Set permissions for the ticket creator
-		{
-			ID:    userID,
-			Type:  discordgo.PermissionOverwriteTypeMember,
-			Allow: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages,
-		},
-		// Set permissions for everyone else in the server
-		{
-			ID:   i.GuildID,
-			Type: discordgo.PermissionOverwriteTypeRole,
-			Deny: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages,
-		},
-	}
-
-	// Set permissions for each moderator role
-	for _, roleID := range moderatorRoles {
-		permissionOverwrites = append(permissionOverwrites, &discordgo.PermissionOverwrite{
-			ID:    roleID,
-			Type:  discordgo.PermissionOverwriteTypeRole,
-			Allow: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages,
-		})
-	}
-
 	channel, err := s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
-		Name:                 channelName,
-		Type:                 discordgo.ChannelTypeGuildText,
-		ParentID:             ticketChannel.CategoryID,
-		PermissionOverwrites: permissionOverwrites,
+		Name:     channelName,
+		Type:     discordgo.ChannelTypeGuildText,
+		ParentID: ticketChannel.CategoryID,
 	})
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to create ticket channel.",
-			},
-		})
+		respondWithMessage(s, i, "Failed to create ticket channel.")
 		return
 	}
 
 	err = utils.IncrementTicketNumber(i.GuildID, userID, ticketNumber)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to increment ticket number.",
-			},
-		})
+		respondWithMessage(s, i, "Failed to increment ticket number.")
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Ticket created: <#" + channel.ID + ">",
+	respondWithMessage(s, i, "Ticket created: <#"+channel.ID+">")
+
+	s.ChannelMessageSendComplex(channel.ID, &discordgo.MessageSend{
+		Content: "Ticket created by <@" + userID + ">",
+		Components: []discordgo.MessageComponent{
+			discordgo.ActionsRow{
+				Components: []discordgo.MessageComponent{
+					discordgo.Button{
+						CustomID: "close_ticket",
+						Label:    "Close Ticket",
+						Style:    discordgo.DangerButton,
+					},
+				},
+			},
 		},
+		Embeds: []*discordgo.MessageEmbed{embed},
 	})
+	if err != nil {
+		log.Println("Error responding to modal submission:", err)
+	}
+}
+
+//
+//
+//
+//
+//
+//
+//
+//
+
+func TicketButtonHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.MessageComponentData().CustomID != "create_ticket" {
+		return
+	}
+
+	ticketChannel, err := utils.GetTicketSetup(i.GuildID)
+	if err != nil {
+		respondWithMessage(s, i, "Failed to retrieve ticket channel.")
+		return
+	}
+
+	username := i.Member.User.Username
+	userID := i.Member.User.ID
+
+	ticketNumber, err := utils.GetNextTicketNumber(i.GuildID, userID)
+	if err != nil {
+		respondWithMessage(s, i, "Failed to retrieve next ticket number.")
+		return
+	}
+
+	channelName := "ticket-" + username + "-" + strconv.Itoa(ticketNumber)
+
+	channel, err := s.GuildChannelCreateComplex(i.GuildID, discordgo.GuildChannelCreateData{
+		Name:     channelName,
+		Type:     discordgo.ChannelTypeGuildText,
+		ParentID: ticketChannel.CategoryID,
+	})
+	if err != nil {
+		respondWithMessage(s, i, "Failed to create ticket channel.")
+		return
+	}
+
+	err = utils.IncrementTicketNumber(i.GuildID, userID, ticketNumber)
+	if err != nil {
+		respondWithMessage(s, i, "Failed to increment ticket number.")
+		return
+	}
+
+	respondWithMessage(s, i, "Ticket created: <#"+channel.ID+">")
 
 	s.ChannelMessageSendComplex(channel.ID, &discordgo.MessageSend{
 		Content: "Ticket created by <@" + userID + ">",
@@ -212,7 +495,7 @@ func TicketButtonHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				Description: "Ticket information for this ticket.",
 				Color:       0x00ff00,
 				Image: &discordgo.MessageEmbedImage{
-					URL: "https://cdn.discordapp.com/attachments/1190806297881350164/1284438122867986492/footer.png",
+					URL: "https://i.imgur.com/RAClg4Q.png",
 				},
 				Fields: []*discordgo.MessageEmbedField{
 					{
@@ -229,207 +512,114 @@ func TicketButtonHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			},
 		},
 	})
-
 }
 
-func TicketAddModeratorRolesCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	options := i.ApplicationCommandData().Options[0].Options
-	if len(options) == 0 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Please provide a role to add.",
-			},
-		})
-		return
+func createMessageData(msg *discordgo.Message) map[string]interface{} {
+	messageData := map[string]interface{}{
+		"username":        msg.Author.Username,
+		"pfp":             msg.Author.AvatarURL(""),
+		"message_content": string(blackfriday.Run([]byte(msg.Content))),
+		"attachments":     []map[string]interface{}{},
+		"embeds":          []map[string]interface{}{},
+		"reactions":       []map[string]interface{}{},
+		"components":      []map[string]interface{}{},
 	}
 
-	roleID := options[0].RoleValue(s, "").ID
-
-	err := utils.AddModeratorRoles(i.GuildID, []string{roleID})
-	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to add moderator role.",
-			},
-		})
-		return
+	for _, reaction := range msg.Reactions {
+		reactionData := map[string]interface{}{
+			"emoji": reaction.Emoji.Name,
+			"count": reaction.Count,
+		}
+		messageData["reactions"] = append(messageData["reactions"].([]map[string]interface{}), reactionData)
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Moderator role added successfully!",
-		},
-	})
-}
-
-func TicketGetModeratorRolesCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	moderatorRoles, err := utils.GetModeratorRoles(i.GuildID)
-	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to retrieve moderator roles.",
-			},
-		})
-		return
+	for _, attachment := range msg.Attachments {
+		attachmentData := map[string]interface{}{
+			"type":     attachment.ContentType,
+			"url":      attachment.URL,
+			"filename": attachment.Filename,
+		}
+		messageData["attachments"] = append(messageData["attachments"].([]map[string]interface{}), attachmentData)
 	}
 
-	var roleMentions []string
-	for _, roleID := range moderatorRoles {
-		roleMentions = append(roleMentions, "<@&"+roleID+">")
+	for _, embed := range msg.Embeds {
+		embedData := map[string]interface{}{
+			"title":       embed.Title,
+			"description": embed.Description,
+			"url":         embed.URL,
+			"color":       embed.Color,
+			"fields":      []map[string]interface{}{},
+			"image":       embed.Image,
+		}
+		for _, field := range embed.Fields {
+			fieldData := map[string]interface{}{
+				"name":  field.Name,
+				"value": field.Value,
+			}
+			embedData["fields"] = append(embedData["fields"].([]map[string]interface{}), fieldData)
+		}
+		messageData["embeds"] = append(messageData["embeds"].([]map[string]interface{}), embedData)
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Title:       "Moderator Roles",
-					Description: "Moderator roles for this server.",
-					Color:       0x00ff00,
-					Image: &discordgo.MessageEmbedImage{
-						URL: "https://cdn.discordapp.com/attachments/1190806297881350164/1284438122867986492/footer.png",
-					},
-					Fields: []*discordgo.MessageEmbedField{
-						{
-							Name:   "Roles",
-							Value:  "• " + strings.Join(roleMentions, "\n• "),
-							Inline: true,
-						},
-					},
-				},
-			},
-		},
-	})
-}
-
-func TicketRemoveModeratorRolesCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	options := i.ApplicationCommandData().Options[0].Options
-	if len(options) == 0 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Please provide a role to remove.",
-			},
-		})
-		return
-	}
-
-	roleID := options[0].RoleValue(s, "").ID
-
-	err := utils.RemoveModeratorRoles(i.GuildID, roleID)
-	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to remove moderator role.",
-			},
-		})
-		return
-	}
-
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Moderator role removed successfully!",
-		},
-	})
+	return messageData
 }
 
 func TicketCloseHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if i.Type == discordgo.InteractionMessageComponent {
-		if i.MessageComponentData().CustomID == "close_ticket" {
-			messages, err := s.ChannelMessages(i.ChannelID, 100, "", "", "")
-			if err != nil {
-				log.Printf("error fetching messages: %v", err)
-				return
-			}
+	if i.Type == discordgo.InteractionMessageComponent && i.MessageComponentData().CustomID == "close_ticket" {
+		messages, err := s.ChannelMessages(i.ChannelID, 100, "", "", "")
+		if err != nil {
+			log.Printf("error fetching messages: %v", err)
+			return
+		}
 
-			var transcript []map[string]interface{}
-			for _, msg := range messages {
-				messageData := map[string]interface{}{
-					"username":        msg.Author.Username,
-					"pfp":             msg.Author.AvatarURL(""),
-					"message_content": string(blackfriday.Run([]byte(msg.Content))),
-					"attachments":     []map[string]interface{}{},
-					"embeds":          []map[string]interface{}{},
-				}
+		var transcript []map[string]interface{}
+		for _, msg := range messages {
+			messageData := createMessageData(msg)
+			transcript = append(transcript, messageData)
+		}
 
-				for _, attachment := range msg.Attachments {
-					attachmentData := map[string]interface{}{
-						"type":     attachment.ContentType,
-						"url":      attachment.URL,
-						"filename": attachment.Filename,
-					}
-					messageData["attachments"] = append(messageData["attachments"].([]map[string]interface{}), attachmentData)
-				}
+		transcriptData := map[string]interface{}{
+			"transcript": transcript,
+		}
 
-				for _, embed := range msg.Embeds {
-					embedData := map[string]interface{}{
-						"title":       "**" + embed.Title + "**",
-						"description": embed.Description,
-						"url":         embed.URL,
-						"color":       embed.Color,
-					}
-					messageData["embeds"] = append(messageData["embeds"].([]map[string]interface{}), embedData)
-				}
+		transcriptJSON, err := json.Marshal(transcriptData)
+		if err != nil {
+			log.Printf("error marshalling transcript: %v", err)
+			return
+		}
 
-				transcript = append(transcript, messageData)
-			}
+		transcriptID, err := utils.StoreTranscript(i.GuildID, i.Member.User.ID, i.ChannelID, transcriptJSON)
+		if err != nil {
+			log.Printf("error storing transcript: %v", err)
+			return
+		}
 
-			transcriptData := map[string]interface{}{
-				"transcript": transcript,
-			}
+		if _, err := s.ChannelDelete(i.ChannelID); err != nil {
+			log.Printf("error deleting channel: %v", err)
+		} else {
+			log.Printf("channel %s deleted", i.ChannelID)
+		}
 
-			transcriptJSON, err := json.Marshal(transcriptData)
-			if err != nil {
-				log.Printf("error marshalling transcript: %v", err)
-				return
-			}
+		channel, err := s.UserChannelCreate(i.Member.User.ID)
+		if err != nil {
+			log.Printf("error creating DM channel: %v", err)
+			return
+		}
 
-			transcriptID, err := utils.StoreTranscript(i.GuildID, i.Member.User.ID, i.ChannelID, transcriptJSON)
-			if err != nil {
-				log.Printf("error storing transcript: %v", err)
-				return
-			}
+		username := i.Member.User.Username
+		userID := i.Member.User.ID
 
-			_, err = s.ChannelDelete(i.ChannelID)
-			if err != nil {
-				log.Printf("error deleting channel: %v", err)
-			} else {
-				log.Printf("channel %s deleted", i.ChannelID)
-			}
-			// DM the user the ticket ID
-			channel, err := s.UserChannelCreate(i.Member.User.ID)
-			if err != nil {
-				log.Printf("error creating DM channel: %v", err)
-				return
-			}
+		ticketNumber, err := utils.GetNextTicketNumber(i.GuildID, userID)
+		if err != nil {
+			log.Printf("error getting next ticket number: %v", err)
+			return
+		}
 
-			username := i.Member.User.Username
-			userID := i.Member.User.ID
+		message := fmt.Sprintf("Your ticket `ticket-%s-%d` has been closed.\n\nHere is your transcript: https://%s/ticket?id=%s",
+			username, ticketNumber-1, cfg.TranscriptUrl, transcriptID.Hex())
 
-			ticketNumber, err := utils.GetNextTicketNumber(i.GuildID, userID)
-			if err != nil {
-				log.Printf("error getting next ticket number: %v", err)
-				return
-			}
-
-			_, err = s.ChannelMessageSend(channel.ID, fmt.Sprintf("Your ticket "+"`ticket-"+username+"-"+strconv.Itoa(ticketNumber-1)+"` has been closed."+"\n\nHere is your transcript: https://"+cfg.TranscriptUrl+"/ticket?id="+transcriptID.Hex()))
-			if err != nil {
-				log.Printf("error sending DM: %v", err)
-				return
-			}
-
-			_, err = s.ChannelDelete(i.ChannelID)
-			if err != nil {
-				log.Printf("error deleting channel: %v", err)
-			} else {
-				log.Printf("channel %s deleted", i.ChannelID)
-			}
+		if _, err := s.ChannelMessageSend(channel.ID, message); err != nil {
+			log.Printf("error sending DM: %v", err)
 		}
 	}
 }
