@@ -52,6 +52,7 @@ func startRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "You need to be in a voice channel to start the radio.",
+				Flags:   64,
 			},
 		})
 		if err != nil {
@@ -91,7 +92,8 @@ func stopRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "Radio is not currently playing.",
+				Content: "Radio is currently not playing.",
+				Flags:   64,
 			},
 		})
 		if err != nil {
