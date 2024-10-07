@@ -42,6 +42,7 @@ func AutoRoleAddCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Please provide a role to add.",
+				Flags:   64,
 			},
 		})
 		return
@@ -55,6 +56,7 @@ func AutoRoleAddCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Failed to add auto role.",
+				Flags:   64,
 			},
 		})
 		return
@@ -64,6 +66,7 @@ func AutoRoleAddCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Auto role added successfully!",
+			Flags:   64,
 		},
 	})
 }
@@ -75,6 +78,7 @@ func AutoRoleGetCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Failed to retrieve auto roles.",
+				Flags:   64,
 			},
 		})
 		return
@@ -88,6 +92,7 @@ func AutoRoleGetCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
+			Flags: 64,
 			Embeds: []*discordgo.MessageEmbed{
 				{
 					Title:       "Auto Roles",
@@ -113,6 +118,7 @@ func AutoRoleRemoveCommand(s *discordgo.Session, i *discordgo.InteractionCreate)
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Please provide a role to remove.",
+				Flags:   64,
 			},
 		})
 		return
@@ -126,6 +132,7 @@ func AutoRoleRemoveCommand(s *discordgo.Session, i *discordgo.InteractionCreate)
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Failed to remove auto role.",
+				Flags:   64,
 			},
 		})
 		return
@@ -135,6 +142,7 @@ func AutoRoleRemoveCommand(s *discordgo.Session, i *discordgo.InteractionCreate)
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Auto role removed successfully!",
+			Flags:   64,
 		},
 	})
 }
