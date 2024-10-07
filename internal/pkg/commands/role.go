@@ -41,6 +41,7 @@ func addRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "Invalid option type for role. Please provide a role.",
+						Flags:   64,
 					},
 				})
 				return
@@ -52,6 +53,7 @@ func addRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "Invalid option type for user. Please provide a user.",
+						Flags:   64,
 					},
 				})
 				return
@@ -65,6 +67,7 @@ func addRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Please provide both a role and a user.",
+				Flags:   64,
 			},
 		})
 		return
@@ -76,6 +79,7 @@ func addRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Failed to add role.",
+				Flags:   64,
 			},
 		})
 		return
@@ -85,6 +89,7 @@ func addRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Role added successfully!",
+			Flags:   64,
 		},
 	})
 }
@@ -100,6 +105,7 @@ func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "Invalid option type for role. Please provide a role.",
+						Flags:   64,
 					},
 				})
 				return
@@ -111,6 +117,7 @@ func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
 					Data: &discordgo.InteractionResponseData{
 						Content: "Invalid option type for user. Please provide a user.",
+						Flags:   64,
 					},
 				})
 				return
@@ -124,6 +131,7 @@ func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Please provide both a role and a user.",
+				Flags:   64,
 			},
 		})
 		return
@@ -135,6 +143,7 @@ func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Failed to remove role.",
+				Flags:   64,
 			},
 		})
 		return
@@ -144,6 +153,7 @@ func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Role removed successfully!",
+			Flags:   64,
 		},
 	})
 }
@@ -155,6 +165,7 @@ func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Please provide a role to add to everyone.",
+				Flags:   64,
 			},
 		})
 		return
@@ -165,6 +176,7 @@ func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Invalid option type. Please provide a role.",
+				Flags:   64,
 			},
 		})
 		return
@@ -178,6 +190,7 @@ func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Failed to retrieve members.",
+				Flags:   64,
 			},
 		})
 		return
@@ -189,7 +202,7 @@ func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err != nil {
 			log.Printf("Failed to add role to member %s: %v", member.User.ID, err)
 			failedMembers = append(failedMembers, member.User.ID)
-			time.Sleep(1 * time.Second) // Adding a delay to handle potential rate limits
+			time.Sleep(1 * time.Second)
 		}
 	}
 
@@ -198,6 +211,7 @@ func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Failed to add role to some members: " + strings.Join(failedMembers, ", "),
+				Flags:   64,
 			},
 		})
 	} else {
@@ -205,6 +219,7 @@ func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Role added to everyone successfully!",
+				Flags:   64,
 			},
 		})
 	}
