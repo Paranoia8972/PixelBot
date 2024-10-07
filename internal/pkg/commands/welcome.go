@@ -3,6 +3,7 @@ package commands
 import (
 	"log"
 
+	_ "github.com/Paranoia8972/PixelBot/internal/events"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
 )
@@ -14,6 +15,7 @@ func WelcomeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Please provide a subcommand.",
+				Flags:   64,
 			},
 		})
 		return
@@ -64,13 +66,14 @@ func WelcomeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
+				Flags: 64,
 				Embeds: []*discordgo.MessageEmbed{
 					{
 						Title:       "Welcome Channel",
 						Description: "Current welcome channel and message",
 						Color:       0x00ff00,
 						Image: &discordgo.MessageEmbedImage{
-							URL: "https://cdn.discordapp.com/attachments/1190806297881350164/1284438122867986492/footer.png",
+							URL: "https://i.imgur.com/RAClg4Q.png",
 						},
 						Fields: []*discordgo.MessageEmbedField{
 							{
@@ -97,6 +100,7 @@ func WelcomeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionResponseData{
 					Content: "Failed to delete welcome channel.",
+					Flags:   64,
 				},
 			})
 			return
@@ -106,6 +110,7 @@ func WelcomeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "Welcome channel deleted successfully!",
+				Flags:   64,
 			},
 		})
 	}
