@@ -393,6 +393,21 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Name:     channelName,
 		Type:     discordgo.ChannelTypeGuildText,
 		ParentID: ticketChannel.CategoryID,
+		Topic:    fmt.Sprintf("%s: %s", data.CustomID, embed.Fields[1].Value),
+		PermissionOverwrites: []*discordgo.PermissionOverwrite{
+			{
+				ID:    i.Member.User.ID, // user
+				Type:  discordgo.PermissionOverwriteTypeMember,
+				Allow: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages | discordgo.PermissionReadMessageHistory,
+				Deny:  0,
+			},
+			{
+				ID:    i.GuildID, // everyone
+				Type:  discordgo.PermissionOverwriteTypeRole,
+				Allow: 0,
+				Deny:  discordgo.PermissionViewChannel | discordgo.PermissionSendMessages | discordgo.PermissionReadMessageHistory,
+			},
+		},
 	})
 	if err != nil {
 		respondWithMessage(s, i, "Failed to create ticket channel.")
