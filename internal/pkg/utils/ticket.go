@@ -21,7 +21,10 @@ type Tickets struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty"`
 	GuildID    string             `bson:"guild_id"`
 	UserID     string             `bson:"user_id"`
+	Username   string             `bson:"username"`
 	ChannelID  string             `bson:"channel_id"`
+	Type       string             `bson:"type"`
+	Details    map[string]string  `bson:"details"`
 	Transcript string             `bson:"transcript"`
 }
 
@@ -100,4 +103,35 @@ func StoreTranscript(guildID, userID, channelID string, transcriptJSON []byte) (
 		return primitive.NilObjectID, err
 	}
 	return result.InsertedID.(primitive.ObjectID), nil
+}
+
+func GetTicketByChannelID(channelID string) (Tickets, error) {
+	collection := db.GetCollection(cfg.DBName, "tickets")
+	filter := bson.M{"channel_id": channelID}
+	var ticket Tickets
+	err := collection.FindOne(context.Background(), filter).Decode(&ticket)
+	if err != nil {
+		return Tickets{}, err
+	}
+	return ticket, nil
+}
+
+func StoreTicket(ticket Tickets) (primitive.ObjectID, error) {
+	collection := db.GetCollection(cfg.DBName, "tickets")
+	result, err := collection.InsertOne(context.Background(), ticket)
+	if err != nil {
+		return primitive.NilObjectID, err
+	}
+	return result.InsertedID.(primitive.ObjectID), nil
+}
+
+func GetTranscriptChannelID(guildID string) (string, error) {
+	collection := db.GetCollection(cfg.DBName, "ticket_setup")
+	filter := bson.M{"guild_id": guildID}
+	var ticketSetup TicketSetup
+	err := collection.FindOne(context.Background(), filter).Decode(&ticketSetup)
+	if err != nil {
+		return "", err
+	}
+	return ticketSetup.TranscriptChannelID, nil
 }

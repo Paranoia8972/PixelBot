@@ -371,7 +371,6 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 	}
 
-	// Create ticket channel
 	ticketChannel, err := utils.GetTicketSetup(i.GuildID)
 	if err != nil {
 		respondWithMessage(s, i, "Failed to retrieve ticket channel.")
@@ -393,7 +392,7 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Name:     channelName,
 		Type:     discordgo.ChannelTypeGuildText,
 		ParentID: ticketChannel.CategoryID,
-		Topic:    fmt.Sprintf("%s: %s", data.CustomID, embed.Fields[1].Value),
+		Topic:    fmt.Sprintf("%s: %s", data.CustomID, embed.Fields[0].Value),
 		PermissionOverwrites: []*discordgo.PermissionOverwrite{
 			{
 				ID:    i.Member.User.ID, // user
@@ -407,10 +406,43 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				Allow: 0,
 				Deny:  discordgo.PermissionViewChannel | discordgo.PermissionSendMessages | discordgo.PermissionReadMessageHistory,
 			},
+			{
+				ID:    "1074354995757076662", // replace with admin role id
+				Type:  discordgo.PermissionOverwriteTypeRole,
+				Allow: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages | discordgo.PermissionReadMessageHistory,
+				Deny:  0,
+			},
 		},
 	})
 	if err != nil {
 		respondWithMessage(s, i, "Failed to create ticket channel.")
+		return
+	}
+
+	details := make(map[string]string)
+	for _, component := range data.Components {
+		if actionRow, ok := component.(*discordgo.ActionsRow); ok {
+			for _, item := range actionRow.Components {
+				if input, ok := item.(*discordgo.TextInput); ok {
+					details[input.CustomID] = input.Value
+				}
+			}
+		}
+	}
+
+	ticketType := data.CustomID
+
+	ticket := utils.Tickets{
+		GuildID:   i.GuildID,
+		UserID:    userID,
+		Username:  username,
+		ChannelID: channel.ID,
+		Type:      ticketType,
+		Details:   details,
+	}
+	_, err = utils.StoreTicket(ticket)
+	if err != nil {
+		respondWithMessage(s, i, "Failed to store ticket information.")
 		return
 	}
 
@@ -421,7 +453,6 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	respondWithMessage(s, i, "Ticket created: <#"+channel.ID+">")
-
 	s.ChannelMessageSendComplex(channel.ID, &discordgo.MessageSend{
 		Content: "Ticket created by <@" + userID + ">",
 		Components: []discordgo.MessageComponent{
@@ -437,7 +468,6 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		},
 		Embeds: []*discordgo.MessageEmbed{embed},
 	})
-	log.Println("Error responding to modal submission:", err)
 }
 
 func createMessageData(msg *discordgo.Message) map[string]interface{} {
@@ -526,14 +556,20 @@ func TicketCloseHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			log.Printf("channel %s deleted", i.ChannelID)
 		}
 
-		channel, err := s.UserChannelCreate(i.Member.User.ID)
+		ticket, err := utils.GetTicketByChannelID(i.ChannelID)
+		if err != nil {
+			log.Printf("error retrieving ticket: %v", err)
+			return
+		}
+
+		channel, err := s.UserChannelCreate(ticket.UserID)
 		if err != nil {
 			log.Printf("error creating DM channel: %v", err)
 			return
 		}
 
-		username := i.Member.User.Username
-		userID := i.Member.User.ID
+		username := ticket.Username
+		userID := ticket.UserID
 
 		ticketNumber, err := utils.GetNextTicketNumber(i.GuildID, userID)
 		if err != nil {
@@ -546,6 +582,18 @@ func TicketCloseHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		if _, err := s.ChannelMessageSend(channel.ID, message); err != nil {
 			log.Printf("error sending DM: %v", err)
+		}
+		transcriptChannelID, err := utils.GetTranscriptChannelID(i.GuildID)
+		if err != nil {
+			log.Printf("error retrieving transcript channel ID: %v", err)
+			return
+		}
+
+		transcriptMessage := fmt.Sprintf("Transcript for ticket `ticket-%s-%d`: https://%s/ticket?id=%s",
+			username, ticketNumber-1, cfg.TranscriptUrl, transcriptID.Hex())
+
+		if _, err := s.ChannelMessageSend(transcriptChannelID, transcriptMessage); err != nil {
+			log.Printf("error sending message to transcript channel: %v", err)
 		}
 	}
 }
