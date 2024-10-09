@@ -1,5 +1,5 @@
 build:
-    go build -o bin/PixelBot ./cmd/bot/main.go
+    go build -o bin/PixelBot .
 
 clean:
     rm -f bin/bot
