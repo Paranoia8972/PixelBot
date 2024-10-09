@@ -67,14 +67,47 @@ func TicketSetupCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	respondWithMessage(s, i, "Ticket system set up successfully!")
 
 	s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
-		Content: "Click the button below to create a new ticket.",
+		Content: "Select an option below to open a ticket.",
 		Components: []discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{
-					discordgo.Button{
-						CustomID: "create_ticket",
-						Label:    "Create Ticket",
-						Style:    discordgo.PrimaryButton,
+					discordgo.SelectMenu{
+						CustomID:    "ticket_menu",
+						Placeholder: "Choose an option",
+						Options: []discordgo.SelectMenuOption{
+							{
+								Label: "Ban Appeal",
+								Value: "ban_appeal",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292525123596714048",
+									Name: "ban",
+								},
+							},
+							{
+								Label: "Team Application",
+								Value: "team_application",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292526428147154994",
+									Name: "team",
+								},
+							},
+							{
+								Label: "Bug Report",
+								Value: "bug_report",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292526495314608252",
+									Name: "bug",
+								},
+							},
+							{
+								Label: "General support",
+								Value: "general_support",
+								Emoji: &discordgo.ComponentEmoji{
+									ID:   "1292524894608822343",
+									Name: "support",
+								},
+							},
+						},
 					},
 				},
 			},
@@ -323,6 +356,7 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case "team_application_modal":
 		username := data.Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
 		details := data.Components[1].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
+		links := data.Components[2].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
 
 		embed = &discordgo.MessageEmbed{
 			Title:       "Team Application Submitted",
@@ -335,6 +369,10 @@ func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				{
 					Name:  "Details",
 					Value: details,
+				},
+				{
+					Name:  "Links",
+					Value: links,
 				},
 			},
 		}
@@ -589,11 +627,26 @@ func TicketCloseHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 
-		transcriptMessage := fmt.Sprintf("Transcript for ticket `ticket-%s-%d`: https://%s/ticket?id=%s",
-			username, ticketNumber-1, cfg.TranscriptUrl, transcriptID.Hex())
-
-		if _, err := s.ChannelMessageSend(transcriptChannelID, transcriptMessage); err != nil {
-			log.Printf("error sending message to transcript channel: %v", err)
+		details := ""
+		for key, value := range ticket.Details {
+			details += fmt.Sprintf("%s: %v\n", key, value)
 		}
+
+		embed := &discordgo.MessageEmbed{
+			Title:       "Ticket Closed",
+			Description: fmt.Sprintf("Ticket Type: %s\nTranscript URL: [Click Here](https://%s/ticket?id=%s)\nTicket Channel: %s\nDetails:", ticket.Type, cfg.TranscriptUrl, transcriptID.Hex(), i.ChannelID),
+			Color:       0xFF0000,
+			Fields: []*discordgo.MessageEmbedField{
+				{
+					Name:  "Details",
+					Value: details,
+				},
+			},
+		}
+
+		if _, err := s.ChannelMessageSendEmbed(transcriptChannelID, embed); err != nil {
+			log.Printf("error sending embed to transcript channel: %v", err)
+		}
+
 	}
 }
