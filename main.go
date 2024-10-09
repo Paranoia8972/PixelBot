@@ -33,8 +33,8 @@ func main() {
 
 	// Handlers
 	dg.AddHandler(events.Ready)
+	dg.AddHandler(events.MemberAdd)
 	dg.AddHandler(commands.TicketCloseHandler)
-	// dg.AddHandler(commands.ModalSubmitHandler)
 
 	err = dg.Open()
 	if err != nil {
@@ -75,7 +75,7 @@ func main() {
 		}
 	})
 
-	// Start the transcript server in a separate goroutine
+	// start transcript server in goroutine
 	go transcript.StartTranscriptServer()
 
 	stop := make(chan os.Signal, 1)
