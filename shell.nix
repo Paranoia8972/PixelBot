@@ -7,6 +7,7 @@ let
       pkgs.opusTools
       pkgs.ffmpeg
       pkgs.gccgo
+      pkgs.git
     ];
 
     env = {
