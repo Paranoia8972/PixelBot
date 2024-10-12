@@ -33,7 +33,6 @@ func main() {
 
 	// Handlers
 	dg.AddHandler(events.Ready)
-	dg.AddHandler(events.MemberAdd)
 	dg.AddHandler(commands.TicketCloseHandler)
 
 	err = dg.Open()

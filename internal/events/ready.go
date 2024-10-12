@@ -31,6 +31,8 @@ func Ready(s *discordgo.Session, r *discordgo.Ready) {
 	}
 
 	s.UpdateStatusComplex(status)
+	s.AddHandler(MemberAdd)
+	s.AddHandler(AutoRole)
 }
 
 func AutoRole(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
