@@ -14,6 +14,16 @@ func init() {
 	cfg = config.LoadConfig()
 }
 
+func respondWithMessage(s *discordgo.Session, i *discordgo.InteractionCreate, message string) {
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: message,
+			Flags:   64,
+		},
+	})
+}
+
 func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 
 	Commands := []*discordgo.ApplicationCommand{

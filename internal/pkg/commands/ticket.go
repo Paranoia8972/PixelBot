@@ -37,16 +37,6 @@ func TicketCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
-func respondWithMessage(s *discordgo.Session, i *discordgo.InteractionCreate, message string) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: message,
-			Flags:   64,
-		},
-	})
-}
-
 func TicketSetupCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options[0].Options
 	if len(options) < 2 {
