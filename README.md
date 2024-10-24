@@ -9,22 +9,16 @@ PixelBot is a Discord bot written in Go (Golang) designed to enhance your Discor
 - **Utility Commands**: Useful commands to help manage your server.
 - **Customizable**: Easily configurable to fit your server's needs.
 
-## Installation
+## Installation and Building
 
 1. Clone the repository:
    ```sh
    git clone https://github.com/Paranoia8972/PixelBot.git
    ```
-2. Navigate to the project directory:
+1. Navigate to the project directory:
    ```sh
    cd PixelBot
    ```
-3. Build the project:
-   ```sh
-   go build -o PixelBot ./cmd/main.go
-   ```
-
-## Configuration and Building
 
 1. Copy `.env.example` to `.env` and fill in the variables:
 
@@ -32,13 +26,13 @@ PixelBot is a Discord bot written in Go (Golang) designed to enhance your Discor
    cp .env.example .env
    ```
 
-2. Build the bot:
+1. Build the project:
 
    ```sh
    go build -o PixelBot ./cmd/bot/main.go
    ```
 
-3. Run the bot:
+1. Run the bot:
    ```sh
    ./PixelBot
    ```
