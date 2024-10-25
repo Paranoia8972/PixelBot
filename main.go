@@ -34,6 +34,7 @@ func main() {
 	// Handlers
 	dg.AddHandler(events.Ready)
 	dg.AddHandler(commands.TicketCloseHandler)
+	dg.AddHandler(events.Welcome)
 
 	err = dg.Open()
 	if err != nil {

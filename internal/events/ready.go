@@ -31,36 +31,18 @@ func Ready(s *discordgo.Session, r *discordgo.Ready) {
 	}
 
 	s.UpdateStatusComplex(status)
-	s.AddHandler(MemberAdd)
-	s.AddHandler(AutoRole)
 }
 
-func AutoRole(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
-	autoRoles, err := utils.GetAutoRoles(m.GuildID)
-	if err != nil {
-		log.Printf("Failed to get auto roles: %v", err)
-		return
-	}
-
-	log.Printf("Auto roles for guild %s: %v", m.GuildID, autoRoles)
-
-	for _, roleID := range autoRoles {
-		log.Printf("Assigning role %s to user %s", roleID, m.User.ID)
-		err := s.GuildMemberRoleAdd(m.GuildID, m.User.ID, roleID)
-		if err != nil {
-			log.Printf("Failed to add role %s to user %s: %v", roleID, m.User.ID, err)
-		}
-	}
-}
-
-func MemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
+func Welcome(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 	// Auto role logic
 	autoRoles, err := utils.GetAutoRoles(m.GuildID)
 	if err != nil {
 		log.Printf("Failed to get auto roles: %v", err)
 		return
 	}
+
 	log.Printf("Auto roles for guild %s: %v", m.GuildID, autoRoles)
+
 	for _, roleID := range autoRoles {
 		log.Printf("Assigning role %s to user %s", roleID, m.User.ID)
 		err := s.GuildMemberRoleAdd(m.GuildID, m.User.ID, roleID)
@@ -69,11 +51,6 @@ func MemberAdd(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 		}
 	}
 
-	// Call the function to send the welcome message
-	sendWelcomeMessage(s, m)
-}
-
-func sendWelcomeMessage(s *discordgo.Session, m *discordgo.GuildMemberAdd) {
 	// Welcome message logic
 	welcomeChannel, err := utils.GetWelcomeChannel(m.GuildID)
 	if err != nil {
