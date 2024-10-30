@@ -267,23 +267,23 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 		{
 			Name:                     "giveaway",
 			Description:              "Manage giveaways",
-			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageMessages}[0],
 			Options: []*discordgo.ApplicationCommandOption{
 				{
-					Name:        "create",
-					Description: "Create a giveaway",
+					Name:        "start",
+					Description: "Start a new giveaway",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Options: []*discordgo.ApplicationCommandOption{
 						{
 							Name:        "duration",
-							Description: "Duration of the giveaway",
+							Description: "Duration of the giveaway (e.g., 1h, 30m)",
 							Type:        discordgo.ApplicationCommandOptionString,
 							Required:    true,
 						},
 						{
 							Name:        "winners",
 							Description: "Number of winners",
-							Type:        discordgo.ApplicationCommandOptionString,
+							Type:        discordgo.ApplicationCommandOptionInteger,
 							Required:    true,
 						},
 						{
@@ -295,38 +295,13 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 					},
 				},
 				{
-					Name:        "edit",
-					Description: "Edit a giveaway",
-					Type:        discordgo.ApplicationCommandOptionSubCommand,
-					Options: []*discordgo.ApplicationCommandOption{
-						{
-							Name:        "message_id",
-							Description: "ID of the message to edit",
-							Type:        discordgo.ApplicationCommandOptionString,
-							Required:    true,
-						},
-						{
-							Name:        "duration",
-							Description: "Duration of the giveaway",
-							Type:        discordgo.ApplicationCommandOptionString,
-							Required:    false,
-						},
-						{
-							Name:        "winners",
-							Description: "Number of winners",
-							Type:        discordgo.ApplicationCommandOptionString,
-							Required:    false,
-						},
-					},
-				},
-				{
 					Name:        "end",
-					Description: "End a giveaway",
+					Description: "End an ongoing giveaway",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Options: []*discordgo.ApplicationCommandOption{
 						{
 							Name:        "message_id",
-							Description: "ID of the message to end",
+							Description: "Message ID of the giveaway message",
 							Type:        discordgo.ApplicationCommandOptionString,
 							Required:    true,
 						},
@@ -334,12 +309,12 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 				},
 				{
 					Name:        "reroll",
-					Description: "Reroll a giveaway",
+					Description: "Reroll winners for a giveaway",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Options: []*discordgo.ApplicationCommandOption{
 						{
 							Name:        "message_id",
-							Description: "ID of the message to reroll",
+							Description: "Message ID of the giveaway message",
 							Type:        discordgo.ApplicationCommandOptionString,
 							Required:    true,
 						},

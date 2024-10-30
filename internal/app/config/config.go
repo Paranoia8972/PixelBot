@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/joho/godotenv"
 )
@@ -20,16 +19,9 @@ type Config struct {
 var cfg *Config
 
 func LoadConfig() *Config {
-	exePath, err := os.Executable()
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Error getting executable path: %v", err)
-	}
-	exeDir := filepath.Dir(exePath)
-	envPath := filepath.Join(exeDir, ".env")
-
-	err = godotenv.Load(envPath)
-	if err != nil {
-		log.Fatalf("Error loading .env file from %s: %v", envPath, err)
+		log.Fatalf("Error loading .env file")
 	}
 
 	cfg = &Config{

@@ -35,6 +35,7 @@ func main() {
 	dg.AddHandler(events.Ready)
 	dg.AddHandler(commands.TicketCloseHandler)
 	dg.AddHandler(events.Welcome)
+	dg.AddHandler(commands.GiveawayInteractionHandler)
 
 	err = dg.Open()
 	if err != nil {
@@ -64,6 +65,8 @@ func main() {
 				commands.RoleCommand(s, i)
 			case "autorole":
 				commands.AutoRoleCommand(s, i)
+			case "giveaway":
+				commands.GiveawayCommand(s, i)
 			}
 		case discordgo.InteractionModalSubmit:
 			commands.ModalSubmitHandler(s, i)
@@ -77,6 +80,7 @@ func main() {
 
 	// start transcript server in goroutine
 	go transcript.StartTranscriptServer()
+	go commands.StartBackgroundWorker(dg)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
