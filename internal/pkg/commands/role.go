@@ -2,196 +2,72 @@ package commands
 
 import (
 	"log"
-	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 func RoleCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	if len(i.ApplicationCommandData().Options) == 0 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "No subcommand provided.",
-				Flags:   64,
-			},
-		})
+	options := i.ApplicationCommandData().Options
+	if len(options) == 0 {
+		respondWithMessage(s, i, "No subcommand provided.")
 		return
 	}
 
-	switch i.ApplicationCommandData().Options[0].Name {
+	switch options[0].Name {
 	case "add":
 		addRole(s, i)
 	case "remove":
 		removeRole(s, i)
-	case "all":
-		roleAll(s, i)
+	case "addall":
+		addRoleToAll(s, i)
+	case "removeall":
+		removeRoleFromAll(s, i)
+	default:
+		respondWithMessage(s, i, "Unknown subcommand.")
 	}
 }
 
 func addRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	var roleID, userID string
+	user := i.ApplicationCommandData().Options[0].Options[0].UserValue(s)
+	roleID := i.ApplicationCommandData().Options[0].Options[1].RoleValue(s, "").ID
 
-	for _, option := range i.ApplicationCommandData().Options[0].Options {
-		switch option.Name {
-		case "role":
-			if option.Type != discordgo.ApplicationCommandOptionRole {
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Content: "Invalid option type for role. Please provide a role.",
-						Flags:   64,
-					},
-				})
-				return
-			}
-			roleID = option.RoleValue(s, "").ID
-		case "user":
-			if option.Type != discordgo.ApplicationCommandOptionUser {
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Content: "Invalid option type for user. Please provide a user.",
-						Flags:   64,
-					},
-				})
-				return
-			}
-			userID = option.UserValue(s).ID
-		}
-	}
-
-	if roleID == "" || userID == "" {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Please provide both a role and a user.",
-				Flags:   64,
-			},
-		})
-		return
-	}
-
-	err := s.GuildMemberRoleAdd(i.GuildID, userID, roleID)
+	err := s.GuildMemberRoleAdd(i.GuildID, user.ID, roleID)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to add role.",
-				Flags:   64,
-			},
-		})
+		respondWithMessage(s, i, "Failed to add role.")
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Role added successfully!",
-			Flags:   64,
-		},
-	})
+	respondWithMessage(s, i, "Role added successfully!")
 }
 
 func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	var roleID, userID string
+	user := i.ApplicationCommandData().Options[0].Options[0].UserValue(s)
+	roleID := i.ApplicationCommandData().Options[0].Options[1].RoleValue(s, "").ID
 
-	for _, option := range i.ApplicationCommandData().Options[0].Options {
-		switch option.Name {
-		case "role":
-			if option.Type != discordgo.ApplicationCommandOptionRole {
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Content: "Invalid option type for role. Please provide a role.",
-						Flags:   64,
-					},
-				})
-				return
-			}
-			roleID = option.RoleValue(s, "").ID
-		case "user":
-			if option.Type != discordgo.ApplicationCommandOptionUser {
-				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{
-						Content: "Invalid option type for user. Please provide a user.",
-						Flags:   64,
-					},
-				})
-				return
-			}
-			userID = option.UserValue(s).ID
-		}
-	}
-
-	if roleID == "" || userID == "" {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Please provide both a role and a user.",
-				Flags:   64,
-			},
-		})
-		return
-	}
-
-	err := s.GuildMemberRoleRemove(i.GuildID, userID, roleID)
+	err := s.GuildMemberRoleRemove(i.GuildID, user.ID, roleID)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to remove role.",
-				Flags:   64,
-			},
-		})
+		respondWithMessage(s, i, "Failed to remove role.")
 		return
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Role removed successfully!",
-			Flags:   64,
-		},
-	})
+	respondWithMessage(s, i, "Role removed successfully!")
 }
 
-func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	options := i.ApplicationCommandData().Options[0].Options
-	if len(options) == 0 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Please provide a role to add to everyone.",
-				Flags:   64,
-			},
-		})
+func addRoleToAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+	if err != nil {
+		log.Printf("Failed to defer interaction response: %v", err)
 		return
 	}
 
-	if options[0].Type != discordgo.ApplicationCommandOptionRole {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Invalid option type. Please provide a role.",
-				Flags:   64,
-			},
-		})
-		return
-	}
-
-	roleID := options[0].RoleValue(s, "").ID
-
+	roleID := i.ApplicationCommandData().Options[0].Options[0].RoleValue(s, "").ID
 	members, err := s.GuildMembers(i.GuildID, "", 1000)
 	if err != nil {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to retrieve members.",
-				Flags:   64,
-			},
+		s.FollowupMessageCreate(i.Interaction, false, &discordgo.WebhookParams{
+			Content: "Failed to retrieve members.",
 		})
 		return
 	}
@@ -202,25 +78,72 @@ func roleAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if err != nil {
 			log.Printf("Failed to add role to member %s: %v", member.User.ID, err)
 			failedMembers = append(failedMembers, member.User.ID)
-			time.Sleep(1 * time.Second)
 		}
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	if len(failedMembers) > 0 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to add role to some members: " + strings.Join(failedMembers, ", "),
-				Flags:   64,
-			},
+		failedMessage := "Failed to add role to some members."
+		_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			Content: &failedMessage,
 		})
+		if err != nil {
+			log.Printf("Failed to edit interaction response: %v", err)
+		}
 	} else {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "Role added to everyone successfully!",
-				Flags:   64,
-			},
+		successMessage := "Role added to all members successfully!"
+		_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			Content: &successMessage,
 		})
+		if err != nil {
+			log.Printf("Failed to edit interaction response: %v", err)
+		}
+	}
+}
+
+func removeRoleFromAll(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+	if err != nil {
+		log.Printf("Failed to defer interaction response: %v", err)
+		return
+	}
+
+	roleID := i.ApplicationCommandData().Options[0].Options[0].RoleValue(s, "").ID
+	members, err := s.GuildMembers(i.GuildID, "", 1000)
+	if err != nil {
+		s.FollowupMessageCreate(i.Interaction, false, &discordgo.WebhookParams{
+			Content: "Failed to retrieve members.",
+		})
+		return
+	}
+
+	var failedMembers []string
+	for _, member := range members {
+		err := s.GuildMemberRoleRemove(i.GuildID, member.User.ID, roleID)
+		if err != nil {
+			log.Printf("Failed to remove role from member %s: %v", member.User.ID, err)
+			failedMembers = append(failedMembers, member.User.ID)
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	if len(failedMembers) > 0 {
+		failedMessage := "Failed to remove role from some members."
+		_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			Content: &failedMessage,
+		})
+		if err != nil {
+			log.Printf("Failed to edit interaction response: %v", err)
+		}
+	} else {
+		successMessage := "Role removed from all members successfully!"
+		_, err = s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			Content: &successMessage,
+		})
+		if err != nil {
+			log.Printf("Failed to edit interaction response: %v", err)
+		}
 	}
 }

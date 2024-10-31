@@ -72,32 +72,19 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageRoles}[0],
 			Options: []*discordgo.ApplicationCommandOption{
 				{
-					Name:        "all",
-					Description: "Assign a role to all members",
-					Type:        discordgo.ApplicationCommandOptionSubCommand,
-					Options: []*discordgo.ApplicationCommandOption{
-						{
-							Name:        "role",
-							Description: "Role to assign",
-							Type:        discordgo.ApplicationCommandOptionRole,
-							Required:    true,
-						},
-					},
-				},
-				{
 					Name:        "add",
-					Description: "Assign a role to a specific user",
+					Description: "Add a role to a member",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Options: []*discordgo.ApplicationCommandOption{
 						{
 							Name:        "user",
-							Description: "User to assign the role to",
+							Description: "User to add the role to",
 							Type:        discordgo.ApplicationCommandOptionUser,
 							Required:    true,
 						},
 						{
 							Name:        "role",
-							Description: "Role to assign",
+							Description: "Role to add",
 							Type:        discordgo.ApplicationCommandOptionRole,
 							Required:    true,
 						},
@@ -105,7 +92,7 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 				},
 				{
 					Name:        "remove",
-					Description: "Remove a role from a specific user",
+					Description: "Remove a role from a member",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
 					Options: []*discordgo.ApplicationCommandOption{
 						{
@@ -117,6 +104,32 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 						{
 							Name:        "role",
 							Description: "Role to remove",
+							Type:        discordgo.ApplicationCommandOptionRole,
+							Required:    true,
+						},
+					},
+				},
+				{
+					Name:        "addall",
+					Description: "Add a role to all members",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "role",
+							Description: "Role to add to all members",
+							Type:        discordgo.ApplicationCommandOptionRole,
+							Required:    true,
+						},
+					},
+				},
+				{
+					Name:        "removeall",
+					Description: "Remove a role from all members",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "role",
+							Description: "Role to remove from all members",
 							Type:        discordgo.ApplicationCommandOptionRole,
 							Required:    true,
 						},
