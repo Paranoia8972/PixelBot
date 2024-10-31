@@ -315,7 +315,7 @@ func TicketSelectHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 }
 
-func ModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func TicketModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if i.Type != discordgo.InteractionModalSubmit {
 		log.Printf("ModalSubmitHandler called with incorrect interaction type: %v", i.Type)
 		return
