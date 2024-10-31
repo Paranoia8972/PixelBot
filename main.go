@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/Paranoia8972/PixelBot/internal/app/config"
@@ -36,6 +37,7 @@ func main() {
 	dg.AddHandler(commands.TicketCloseHandler)
 	dg.AddHandler(events.Welcome)
 	dg.AddHandler(commands.GiveawayInteractionHandler)
+	dg.AddHandler(commands.HandleVoiceStateUpdate)
 
 	err = dg.Open()
 	if err != nil {
@@ -67,13 +69,29 @@ func main() {
 				commands.AutoRoleCommand(s, i)
 			case "giveaway":
 				commands.GiveawayCommand(s, i)
+			case "edit":
+				commands.EditCommand(s, i)
 			}
-		case discordgo.InteractionModalSubmit:
-			commands.ModalSubmitHandler(s, i)
+		}
+	})
+
+	dg.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		switch i.Type {
 		case discordgo.InteractionMessageComponent:
 			switch i.MessageComponentData().CustomID {
 			case "ticket_menu":
 				commands.TicketSelectHandler(s, i)
+			case "close_ticket":
+				commands.TicketCloseHandler(s, i)
+			}
+		case discordgo.InteractionModalSubmit:
+			switch {
+			case i.ModalSubmitData().CustomID == "say_modal":
+				commands.SayCommand(s, i)
+			case strings.HasPrefix(i.ModalSubmitData().CustomID, "edit_modal_"):
+				commands.EditCommand(s, i)
+			default:
+				commands.TicketModalSubmitHandler(s, i)
 			}
 		}
 	})
