@@ -51,7 +51,7 @@ func RadioCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case "start":
 		startRadio(s, i)
 	case "stop":
-		stopRadio(s, i)
+		StopRadio(s, i)
 	}
 }
 
@@ -99,22 +99,33 @@ func startRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	embedMessage := &discordgo.MessageEmbed{
-		Title:       "Now Playing",
-		Description: fmt.Sprintf("**%s** by **%s**", song.Title, song.Artist.Name),
+		Title:       fmt.Sprintf("**%s** by **%s**", song.Title, song.Artist.Name),
+		Description: fmt.Sprintf("Album: %s\nGenre: %s\nRelease Year: %d\nLength: %ss", song.Album, song.Genre, song.ReleaseYear, strconv.Itoa(song.Length)),
 		Thumbnail: &discordgo.MessageEmbedThumbnail{
 			URL: song.Artist.Thumb,
 		},
 		Footer: &discordgo.MessageEmbedFooter{
-			Text: fmt.Sprintf("Album: %s | Genre: %s | Release Year: %d", song.Album, song.Genre, song.ReleaseYear),
+			Text: fmt.Sprintf("Started at: %s", song.StartedAt),
 		},
 		Color: 0x00ff00,
+	}
+
+	stopButton := discordgo.Button{
+		Label:    "Stop Radio",
+		Style:    discordgo.DangerButton,
+		CustomID: "stop_radio",
 	}
 
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Radio started.",
-			Flags:   64,
+			Embeds:  []*discordgo.MessageEmbed{embedMessage},
+			Components: []discordgo.MessageComponent{
+				discordgo.ActionsRow{
+					Components: []discordgo.MessageComponent{stopButton},
+				},
+			},
 		},
 	})
 	if err != nil {
@@ -122,19 +133,13 @@ func startRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	msg, err := s.ChannelMessageSendEmbed(i.ChannelID, embedMessage)
-	if err != nil {
-		log.Printf("Failed to send message: %v", err)
-		return
-	}
-
 	go monitorVoiceChannel(s, guildID, channelID)
-	go updateNowPlaying(s, msg.ChannelID, msg.ID)
+	go updateNowPlaying(s, i.ChannelID, i.ID)
 
 	dgvoice.PlayAudioFile(voiceConnection, "https://onthepixel.stream.laut.fm/onthepixel", make(chan bool))
 }
 
-func stopRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func StopRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if voiceConnection == nil {
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,

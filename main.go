@@ -83,6 +83,8 @@ func main() {
 				commands.TicketSelectHandler(s, i)
 			case "close_ticket":
 				commands.TicketCloseHandler(s, i)
+			case "stop_radio":
+				commands.StopRadio(s, i)
 			}
 		case discordgo.InteractionModalSubmit:
 			switch {
