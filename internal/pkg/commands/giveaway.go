@@ -20,6 +20,7 @@ type Giveaway struct {
 	Prize        string    `bson:"prize"`
 	Participants []string  `bson:"participants"`
 	Winners      []string  `bson:"winners"`
+	Ended        bool      `bson:"ended"`
 }
 
 func GiveawayCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -52,16 +53,8 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 		return
 	}
 
-	msg, err := s.ChannelMessageSend(i.ChannelID, "**Giveaway Starting...**")
-	if err != nil {
-		respondWithMessage(s, i, "Failed to send giveaway message.")
-		return
-	}
-
-	giveawayMessage := &discordgo.MessageEdit{
-		ID:      msg.ID,
-		Channel: msg.ChannelID,
-		Embeds: &[]*discordgo.MessageEmbed{
+	msgSend := &discordgo.MessageSend{
+		Embeds: []*discordgo.MessageEmbed{
 			{
 				Title:       "🎉 Giveaway Started! 🎉",
 				Description: "Prize: " + prize + "\nEnds: <t:" + strconv.FormatInt(time.Now().Add(duration).Unix(), 10) + ":R>\nClick the button below to enter!",
@@ -71,12 +64,12 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 				},
 			},
 		},
-		Components: &[]discordgo.MessageComponent{
+		Components: []discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{
 					discordgo.Button{
 						Label:    "Enter Giveaway",
-						CustomID: "giveaway_enter_" + msg.ID,
+						CustomID: "giveaway_enter_" + strconv.FormatInt(time.Now().Unix(), 10),
 						Style:    discordgo.PrimaryButton,
 					},
 				},
@@ -84,9 +77,10 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 		},
 	}
 
-	_, err = s.ChannelMessageEditComplex(giveawayMessage)
+	msg, err := s.ChannelMessageSendComplex(i.ChannelID, msgSend)
+
 	if err != nil {
-		respondWithMessage(s, i, "Failed to edit giveaway message.")
+		respondWithMessage(s, i, "Failed to send giveaway message.")
 		return
 	}
 
@@ -127,8 +121,6 @@ func endGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options [
 	}
 
 	endGiveawayLogic(s, giveaway)
-
-	respondWithMessage(s, i, "Giveaway ended!")
 }
 
 func StartBackgroundWorker(s *discordgo.Session) {
@@ -188,22 +180,59 @@ func endGiveawayLogic(s *discordgo.Session, giveaway Giveaway) {
 		return
 	}
 
+	if giveaway.Ended {
+		return
+	}
+
 	if len(giveaway.Participants) == 0 {
 		s.ChannelMessageSend(giveaway.ChannelID, "No participants entered the giveaway.")
-		return
+	} else {
+		winners := selectWinners(&giveaway)
+		giveaway.Winners = winners
+		message := "**Giveaway Ended!**\nPrize: " + giveaway.Prize + "\nWinners: " + formatWinners(winners) + "https://discord.com/channels/" + s.State.Guilds[0].ID + "/" + giveaway.ChannelID + "/" + giveaway.MessageID
+		s.ChannelMessageSend(giveaway.ChannelID, message)
 	}
 
-	winners := selectWinners(&giveaway)
+	giveaway.Ended = true
 
-	giveaway.Winners = winners
-	_, err = collection.UpdateOne(context.TODO(), bson.M{"message_id": giveaway.MessageID}, bson.M{"$set": bson.M{"winners": winners}})
+	_, err = collection.UpdateOne(
+		context.TODO(),
+		bson.M{"message_id": giveaway.MessageID},
+		bson.M{"$set": bson.M{"ended": true, "winners": giveaway.Winners}},
+	)
 	if err != nil {
-		s.ChannelMessageSend(giveaway.ChannelID, "Error updating giveaway winners.")
+		s.ChannelMessageSend(giveaway.ChannelID, "Error updating giveaway status.")
 		return
 	}
 
-	message := "**Giveaway Ended!**\nPrize: " + giveaway.Prize + "\nWinners: " + formatWinners(winners) + "https://discord.com/channels/" + s.State.Guilds[0].ID + "/" + giveaway.ChannelID + "/" + giveaway.MessageID
-	s.ChannelMessageSend(giveaway.ChannelID, message)
+	msg, err := s.ChannelMessage(giveaway.ChannelID, giveaway.MessageID)
+	if err != nil {
+		s.ChannelMessageSend(giveaway.ChannelID, "Error fetching original giveaway message.")
+		return
+	}
+
+	if len(msg.Embeds) > 0 {
+		msg.Embeds[0].Title = "Giveaway Ended"
+	}
+
+	for _, component := range msg.Components {
+		for _, actionRow := range component.(*discordgo.ActionsRow).Components {
+			if button, ok := actionRow.(*discordgo.Button); ok {
+				button.Disabled = true
+			}
+		}
+	}
+
+	_, err = s.ChannelMessageEditComplex(&discordgo.MessageEdit{
+		ID:         msg.ID,
+		Channel:    msg.ChannelID,
+		Embeds:     &msg.Embeds,
+		Components: &msg.Components,
+	})
+	if err != nil {
+		s.ChannelMessageSend(giveaway.ChannelID, "Error editing giveaway message.")
+		return
+	}
 }
 
 func selectWinners(giveaway *Giveaway) []string {
