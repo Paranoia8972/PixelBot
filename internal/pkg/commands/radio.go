@@ -1,7 +1,12 @@
 package commands
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/bwmarrin/dgvoice"
@@ -9,6 +14,26 @@ import (
 )
 
 var voiceConnection *discordgo.VoiceConnection
+
+type Song struct {
+	ID          int    `json:"id"`
+	Type        string `json:"type"`
+	Title       string `json:"title"`
+	Album       string `json:"album"`
+	Length      int    `json:"length"`
+	Genre       string `json:"genre"`
+	ReleaseYear int    `json:"releaseyear"`
+	Artist      struct {
+		Name    string `json:"name"`
+		LautID  int    `json:"laut_id"`
+		URL     string `json:"url"`
+		LautURL string `json:"laut_url"`
+		Image   string `json:"image"`
+		Thumb   string `json:"thumb"`
+	} `json:"artist"`
+	StartedAt string `json:"started_at"`
+	EndsAt    string `json:"ends_at"`
+}
 
 func RadioCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if len(i.ApplicationCommandData().Options) == 0 {
@@ -67,22 +92,44 @@ func startRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		log.Fatalf("Failed to join voice channel: %v", errJoin)
 	}
 
+	song, err := getCurrentSong()
+	if err != nil {
+		log.Printf("Failed to get current song: %v", err)
+		return
+	}
+
+	embedMessage := &discordgo.MessageEmbed{
+		Title:       "Now Playing",
+		Description: fmt.Sprintf("**%s** by **%s**", song.Title, song.Artist.Name),
+		Thumbnail: &discordgo.MessageEmbedThumbnail{
+			URL: song.Artist.Thumb,
+		},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: fmt.Sprintf("Album: %s | Genre: %s | Release Year: %d", song.Album, song.Genre, song.ReleaseYear),
+		},
+		Color: 0x00ff00,
+	}
+
 	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Title: "Radio started!",
-					Color: 0x00ff00,
-				},
-			},
+			Content: "Radio started.",
+			Flags:   64,
 		},
 	})
 	if err != nil {
 		log.Printf("Failed to respond to interaction: %v", err)
+		return
+	}
+
+	msg, err := s.ChannelMessageSendEmbed(i.ChannelID, embedMessage)
+	if err != nil {
+		log.Printf("Failed to send message: %v", err)
+		return
 	}
 
 	go monitorVoiceChannel(s, guildID, channelID)
+	go updateNowPlaying(s, msg.ChannelID, msg.ID)
 
 	dgvoice.PlayAudioFile(voiceConnection, "https://onthepixel.stream.laut.fm/onthepixel", make(chan bool))
 }
@@ -109,6 +156,7 @@ func stopRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Radio stopped.",
+			Flags:   64,
 		},
 	})
 	if err != nil {
@@ -144,5 +192,79 @@ func monitorVoiceChannel(s *discordgo.Session, guildID, channelID string) {
 			}
 			break
 		}
+	}
+}
+
+func getCurrentSong() (*Song, error) {
+	resp, err := http.Get("https://api.laut.fm/station/onthepixel/current_song")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var song Song
+	err = json.Unmarshal(body, &song)
+	if err != nil {
+		return nil, err
+	}
+	return &song, nil
+}
+
+func HandleVoiceStateUpdate(s *discordgo.Session, vsu *discordgo.VoiceStateUpdate, channelID, messageID string) {
+	if vsu.UserID == s.State.User.ID && vsu.ChannelID == "" {
+		if voiceConnection != nil {
+			voiceConnection = nil
+			_, err := s.ChannelMessageEdit(channelID, messageID, "Radio stopped")
+			if err != nil {
+				log.Printf("Error editing message: %v", err)
+			}
+		}
+	}
+}
+
+func updateNowPlaying(s *discordgo.Session, channelID, messageID string) {
+	for {
+		if voiceConnection == nil {
+			_, err := s.ChannelMessageEdit(channelID, messageID, "Radio stopped")
+			if err != nil {
+				log.Printf("Error editing message: %v", err)
+			}
+			return
+		}
+
+		song, err := getCurrentSong()
+		if err != nil {
+			log.Printf("Error fetching current song: %v", err)
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		embedMessage := &discordgo.MessageEmbed{
+			Title:       fmt.Sprintf("**%s** by **%s**", song.Title, song.Artist.Name),
+			Description: fmt.Sprintf("Album: %s\nGenre: %s\nRelease Year: %d\nLength: %ss", song.Album, song.Genre, song.ReleaseYear, strconv.Itoa(song.Length)),
+			Thumbnail: &discordgo.MessageEmbedThumbnail{
+				URL: song.Artist.Thumb,
+			},
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: fmt.Sprintf("Started at: %s", song.StartedAt),
+			},
+			Color: 0x00ff00,
+		}
+
+		_, err = s.ChannelMessageEditEmbed(channelID, messageID, embedMessage)
+		if err != nil {
+			log.Printf("Error updating message: %v", err)
+		}
+
+		endsAt, err := time.Parse("2006-01-02 15:04:05 -0700", song.EndsAt)
+		if err != nil {
+			log.Printf("Error parsing end time: %v", err)
+			time.Sleep(10 * time.Second)
+			continue
+		}
+		time.Sleep(time.Until(endsAt))
 	}
 }
