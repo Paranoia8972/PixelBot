@@ -438,8 +438,9 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:        "unban",
-			Description: "Unban a user from the server",
+			Name:                     "unban",
+			Description:              "Unban a user from the server",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionBanMembers}[0],
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:         "user",
