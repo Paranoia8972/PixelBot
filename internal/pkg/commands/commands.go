@@ -14,7 +14,7 @@ func init() {
 	cfg = config.LoadConfig()
 }
 
-func respondWithMessage(s *discordgo.Session, i *discordgo.InteractionCreate, message string) {
+func RespondWithMessage(s *discordgo.Session, i *discordgo.InteractionCreate, message string) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -370,6 +370,83 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 							Required:    true,
 						},
 					},
+				},
+			},
+		},
+		{
+			Name:                     "level",
+			Description:              "Get your current level and XP",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionViewChannel}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "user",
+					Description: "User to get level for",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Required:    true,
+				},
+			},
+		},
+		{
+			Name:                     "mcstatus",
+			Description:              "Get the status of the Minecraft server",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionViewChannel}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "server_ip",
+					Description: "Server to get status for",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    true,
+				},
+			},
+		},
+		{
+			Name:                     "ban",
+			Description:              "Ban a user from the server",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionBanMembers}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "user",
+					Description: "The user to ban",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Required:    true,
+				},
+				{
+					Name:        "reason",
+					Description: "Reason for the ban",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    false,
+				},
+			},
+		},
+		{
+			Name:                     "kick",
+			Description:              "Kick a user from the server",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionKickMembers}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "user",
+					Description: "The user to kick",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Required:    true,
+				},
+				{
+					Name:        "reason",
+					Description: "Reason for the kick",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    false,
+				},
+			},
+		},
+		{
+			Name:        "unban",
+			Description: "Unban a user from the server",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:         "user",
+					Description:  "User to unban",
+					Type:         discordgo.ApplicationCommandOptionString,
+					Required:     true,
+					Autocomplete: true,
 				},
 			},
 		},

@@ -27,7 +27,7 @@ func GiveawayCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options
 
 	if len(options) == 0 {
-		respondWithMessage(s, i, "Please provide a subcommand.")
+		RespondWithMessage(s, i, "Please provide a subcommand.")
 		return
 	}
 
@@ -49,7 +49,7 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 
 	duration, err := time.ParseDuration(durationStr)
 	if err != nil {
-		respondWithMessage(s, i, "Invalid duration format.")
+		RespondWithMessage(s, i, "Invalid duration format.")
 		return
 	}
 
@@ -80,7 +80,7 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 	msg, err := s.ChannelMessageSendComplex(i.ChannelID, msgSend)
 
 	if err != nil {
-		respondWithMessage(s, i, "Failed to send giveaway message.")
+		RespondWithMessage(s, i, "Failed to send giveaway message.")
 		return
 	}
 
@@ -97,7 +97,7 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 	collection := db.GetCollection(cfg.DBName, "giveaways")
 	_, err = collection.InsertOne(context.TODO(), giveaway)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to save giveaway to database.")
+		RespondWithMessage(s, i, "Failed to save giveaway to database.")
 		return
 	}
 
@@ -106,7 +106,7 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 		endGiveawayLogic(s, giveaway)
 	}()
 
-	respondWithMessage(s, i, "Giveaway started!")
+	RespondWithMessage(s, i, "Giveaway started!")
 }
 
 func endGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options []*discordgo.ApplicationCommandInteractionDataOption) {
@@ -116,7 +116,7 @@ func endGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options [
 	var giveaway Giveaway
 	err := collection.FindOne(context.TODO(), bson.M{"message_id": messageID}).Decode(&giveaway)
 	if err != nil {
-		respondWithMessage(s, i, "Giveaway not found.")
+		RespondWithMessage(s, i, "Giveaway not found.")
 		return
 	}
 
@@ -161,7 +161,7 @@ func rerollGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, option
 	var giveaway Giveaway
 	err := collection.FindOne(context.TODO(), bson.M{"message_id": messageID}).Decode(&giveaway)
 	if err != nil {
-		respondWithMessage(s, i, "Giveaway not found.")
+		RespondWithMessage(s, i, "Giveaway not found.")
 		return
 	}
 
@@ -169,7 +169,7 @@ func rerollGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, option
 
 	s.ChannelMessageSend(giveaway.ChannelID, "Giveaway has been rerolled!")
 
-	respondWithMessage(s, i, "Giveaway rerolled!")
+	RespondWithMessage(s, i, "Giveaway rerolled!")
 }
 
 func endGiveawayLogic(s *discordgo.Session, giveaway Giveaway) {
@@ -278,13 +278,13 @@ func GiveawayInteractionHandler(s *discordgo.Session, i *discordgo.InteractionCr
 			var giveaway Giveaway
 			err := collection.FindOne(context.TODO(), bson.M{"message_id": messageID}).Decode(&giveaway)
 			if err != nil {
-				respondWithMessage(s, i, "Giveaway not found.")
+				RespondWithMessage(s, i, "Giveaway not found.")
 
 				return
 			}
 
 			if time.Now().After(giveaway.EndTime) {
-				respondWithMessage(s, i, "Giveaway has ended.")
+				RespondWithMessage(s, i, "Giveaway has ended.")
 				return
 			}
 
@@ -294,7 +294,7 @@ func GiveawayInteractionHandler(s *discordgo.Session, i *discordgo.InteractionCr
 			} else if i.Member != nil && i.Member.User != nil {
 				userID = i.Member.User.ID
 			} else {
-				respondWithMessage(s, i, "Unable to retrieve user information.")
+				RespondWithMessage(s, i, "Unable to retrieve user information.")
 
 				return
 			}
@@ -305,7 +305,7 @@ func GiveawayInteractionHandler(s *discordgo.Session, i *discordgo.InteractionCr
 
 			for _, participant := range giveaway.Participants {
 				if participant == userID {
-					respondWithMessage(s, i, "You have already entered this giveaway.")
+					RespondWithMessage(s, i, "You have already entered this giveaway.")
 					return
 				}
 			}
@@ -318,7 +318,7 @@ func GiveawayInteractionHandler(s *discordgo.Session, i *discordgo.InteractionCr
 				return
 			}
 
-			respondWithMessage(s, i, "You have entered the giveaway!")
+			RespondWithMessage(s, i, "You have entered the giveaway!")
 		}
 	}
 }

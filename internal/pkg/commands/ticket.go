@@ -40,7 +40,7 @@ func TicketCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 func TicketSetupCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options[0].Options
 	if len(options) < 2 {
-		respondWithMessage(s, i, "Please provide a channel and category.")
+		RespondWithMessage(s, i, "Please provide a channel and category.")
 		return
 	}
 
@@ -50,11 +50,11 @@ func TicketSetupCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	err := utils.SetTicketSetup(i.GuildID, channelID, categoryID, transcriptChannelID)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to set up ticket system.")
+		RespondWithMessage(s, i, "Failed to set up ticket system.")
 		return
 	}
 
-	respondWithMessage(s, i, "Ticket system set up successfully!")
+	RespondWithMessage(s, i, "Ticket system set up successfully!")
 
 	s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 		Content: "Select an option below to open a ticket.",
@@ -109,11 +109,11 @@ func TicketSendMessage(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	channelID, err := utils.GetChannelID(i.GuildID)
 	if err != nil {
-		respondWithMessage(s, i, "Error retrieving ChannelID.")
+		RespondWithMessage(s, i, "Error retrieving ChannelID.")
 		return
 	}
 
-	respondWithMessage(s, i, "Ticket message sent successfully!")
+	RespondWithMessage(s, i, "Ticket message sent successfully!")
 	s.ChannelMessageSendComplex(channelID, &discordgo.MessageSend{
 		Content: "Select an option below to open a ticket.",
 		Components: []discordgo.MessageComponent{
@@ -401,7 +401,7 @@ func TicketModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 
 	ticketChannel, err := utils.GetTicketSetup(i.GuildID)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to retrieve ticket channel.")
+		RespondWithMessage(s, i, "Failed to retrieve ticket channel.")
 		return
 	}
 
@@ -410,7 +410,7 @@ func TicketModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 
 	ticketNumber, err := utils.GetNextTicketNumber(i.GuildID, userID)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to retrieve next ticket number.")
+		RespondWithMessage(s, i, "Failed to retrieve next ticket number.")
 		return
 	}
 
@@ -443,7 +443,7 @@ func TicketModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 		},
 	})
 	if err != nil {
-		respondWithMessage(s, i, "Failed to create ticket channel.")
+		RespondWithMessage(s, i, "Failed to create ticket channel.")
 		return
 	}
 
@@ -470,17 +470,17 @@ func TicketModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 	}
 	_, err = utils.StoreTicket(ticket)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to store ticket information.")
+		RespondWithMessage(s, i, "Failed to store ticket information.")
 		return
 	}
 
 	err = utils.IncrementTicketNumber(i.GuildID, userID, ticketNumber)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to increment ticket number.")
+		RespondWithMessage(s, i, "Failed to increment ticket number.")
 		return
 	}
 
-	respondWithMessage(s, i, "Ticket created: <#"+channel.ID+">")
+	RespondWithMessage(s, i, "Ticket created: <#"+channel.ID+">")
 	s.ChannelMessageSendComplex(channel.ID, &discordgo.MessageSend{
 		Content: "Ticket created by <@" + userID + ">",
 		Components: []discordgo.MessageComponent{

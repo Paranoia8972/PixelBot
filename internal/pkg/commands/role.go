@@ -10,7 +10,7 @@ import (
 func RoleCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := i.ApplicationCommandData().Options
 	if len(options) == 0 {
-		respondWithMessage(s, i, "No subcommand provided.")
+		RespondWithMessage(s, i, "No subcommand provided.")
 		return
 	}
 
@@ -24,7 +24,7 @@ func RoleCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case "removeall":
 		removeRoleFromAll(s, i)
 	default:
-		respondWithMessage(s, i, "Unknown subcommand.")
+		RespondWithMessage(s, i, "Unknown subcommand.")
 	}
 }
 
@@ -34,11 +34,11 @@ func addRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	err := s.GuildMemberRoleAdd(i.GuildID, user.ID, roleID)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to add role.")
+		RespondWithMessage(s, i, "Failed to add role.")
 		return
 	}
 
-	respondWithMessage(s, i, "Role added successfully!")
+	RespondWithMessage(s, i, "Role added successfully!")
 }
 
 func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -47,11 +47,11 @@ func removeRole(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	err := s.GuildMemberRoleRemove(i.GuildID, user.ID, roleID)
 	if err != nil {
-		respondWithMessage(s, i, "Failed to remove role.")
+		RespondWithMessage(s, i, "Failed to remove role.")
 		return
 	}
 
-	respondWithMessage(s, i, "Role removed successfully!")
+	RespondWithMessage(s, i, "Role removed successfully!")
 }
 
 func addRoleToAll(s *discordgo.Session, i *discordgo.InteractionCreate) {

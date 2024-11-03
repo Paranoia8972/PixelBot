@@ -3,7 +3,6 @@ package commands
 import (
 	"log"
 
-	_ "github.com/Paranoia8972/PixelBot/internal/events"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
 )
