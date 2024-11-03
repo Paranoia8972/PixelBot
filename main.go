@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io"
+	_ "embed"
 	"log"
 	"os"
 	"os/signal"
@@ -12,6 +12,7 @@ import (
 	"github.com/Paranoia8972/PixelBot/internal/db"
 	"github.com/Paranoia8972/PixelBot/internal/events"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/moderation"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/transcript"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
@@ -19,7 +20,7 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	log.SetOutput(io.Discard)
+	// log.SetOutput(io.Discard)
 
 	// Load config and initialize MongoDB
 	cfg := config.LoadConfig()
@@ -71,6 +72,14 @@ func main() {
 				commands.GiveawayCommand(s, i)
 			case "edit":
 				commands.EditCommand(s, i)
+			case "level":
+				commands.LevelCommand(s, i)
+			case "mcstatus":
+				commands.MinecraftStatusCommand(s, i)
+			case "ban":
+				moderation.BanCommand(s, i)
+			case "unban":
+				moderation.UnbanCommand(s, i)
 			}
 		}
 	})
@@ -94,6 +103,11 @@ func main() {
 				commands.EditCommand(s, i)
 			default:
 				commands.TicketModalSubmitHandler(s, i)
+			}
+		case discordgo.InteractionApplicationCommandAutocomplete:
+			switch i.ApplicationCommandData().Name {
+			case "unban":
+				moderation.UnbanAutocomplete(s, i)
 			}
 		}
 	})
