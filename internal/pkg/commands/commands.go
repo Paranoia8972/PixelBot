@@ -374,9 +374,8 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:                     "level",
-			Description:              "Get your current level and XP",
-			DefaultMemberPermissions: &[]int64{discordgo.PermissionViewChannel}[0],
+			Name:        "level",
+			Description: "Get your current level and XP",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "user",
@@ -387,9 +386,8 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:                     "mcstatus",
-			Description:              "Get the status of the Minecraft server",
-			DefaultMemberPermissions: &[]int64{discordgo.PermissionViewChannel}[0],
+			Name:        "mcstatus",
+			Description: "Get the status of the Minecraft server",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "server_ip",
@@ -448,6 +446,34 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 					Type:         discordgo.ApplicationCommandOptionString,
 					Required:     true,
 					Autocomplete: true,
+				},
+			},
+		},
+		{
+			Name:        "coinflip",
+			Description: "Flip a coin",
+		},
+		{
+			Name:        "randomnumber",
+			Description: "Generate a random number",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "max",
+					Description: "Maximum number to generate",
+					Type:        discordgo.ApplicationCommandOptionInteger,
+					Required:    true,
+				},
+			},
+		},
+		{
+			Name:        "chooser",
+			Description: "Choose a random item from a list",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "items",
+					Description: "List of items to choose from, seperated by commas",
+					Type:        discordgo.ApplicationCommandOptionString,
+					Required:    true,
 				},
 			},
 		},

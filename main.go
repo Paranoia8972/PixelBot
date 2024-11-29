@@ -73,12 +73,20 @@ func main() {
 				commands.GiveawayCommand(s, i)
 			case "edit":
 				commands.EditCommand(s, i)
+			case "level":
+				commands.LevelCommand(s, i)
 			case "mcstatus":
 				commands.MinecraftStatusCommand(s, i)
 			case "ban":
 				moderation.BanCommand(s, i)
 			case "unban":
 				moderation.UnbanCommand(s, i)
+			case "coinflip":
+				commands.CoinFlipCommand(s, i)
+			case "randomnumber":
+				commands.RandomNumberCommand(s, i)
+			case "chooser":
+				commands.ChooserCommand(s, i)
 			}
 		}
 	})
