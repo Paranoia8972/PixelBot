@@ -3,7 +3,10 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
@@ -498,7 +501,7 @@ func TicketModalSubmitHandler(s *discordgo.Session, i *discordgo.InteractionCrea
 	})
 }
 
-func createMessageData(msg *discordgo.Message) map[string]interface{} {
+func createMessageData(msg *discordgo.Message, channelName string) map[string]interface{} {
 	messageData := map[string]interface{}{
 		"username":        msg.Author.Username,
 		"pfp":             msg.Author.AvatarURL(""),
@@ -518,6 +521,24 @@ func createMessageData(msg *discordgo.Message) map[string]interface{} {
 	}
 
 	for _, attachment := range msg.Attachments {
+		resp, err := http.Get(attachment.URL)
+		if err != nil {
+			continue
+		}
+		defer resp.Body.Close()
+
+		filepath := fmt.Sprintf("attachments/%s-%s-%s", channelName, msg.ID, attachment.Filename)
+		out, err := os.Create(filepath)
+		if err != nil {
+			continue
+		}
+		defer out.Close()
+
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			continue
+		}
+
 		attachmentData := map[string]interface{}{
 			"type":     attachment.ContentType,
 			"url":      attachment.URL,
@@ -558,7 +579,7 @@ func TicketCloseHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 		var transcript []map[string]interface{}
 		for _, msg := range messages {
-			messageData := createMessageData(msg)
+			messageData := createMessageData(msg, i.ChannelID)
 			transcript = append(transcript, messageData)
 		}
 
