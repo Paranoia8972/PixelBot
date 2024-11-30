@@ -374,18 +374,6 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:        "level",
-			Description: "Get your current level and XP",
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Name:        "user",
-					Description: "User to get level for",
-					Type:        discordgo.ApplicationCommandOptionUser,
-					Required:    true,
-				},
-			},
-		},
-		{
 			Name:        "mcstatus",
 			Description: "Get the status of the Minecraft server",
 			Options: []*discordgo.ApplicationCommandOption{

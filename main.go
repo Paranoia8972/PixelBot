@@ -2,8 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"io"
-	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -20,8 +18,8 @@ import (
 )
 
 func main() {
-	log.SetFlags(0)
-	log.SetOutput(io.Discard)
+	// log.SetFlags(0)
+	// log.SetOutput(io.Discard)
 
 	// Load config and initialize MongoDB
 	cfg := config.LoadConfig()
@@ -73,8 +71,6 @@ func main() {
 				commands.GiveawayCommand(s, i)
 			case "edit":
 				commands.EditCommand(s, i)
-			case "level":
-				commands.LevelCommand(s, i)
 			case "mcstatus":
 				commands.MinecraftStatusCommand(s, i)
 			case "ban":
