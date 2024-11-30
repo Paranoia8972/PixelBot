@@ -8,7 +8,6 @@ require (
 )
 
 require (
-	github.com/elliotwms/fakediscord v0.16.4 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
