@@ -66,6 +66,7 @@ type TranscriptData struct {
 
 func StartTranscriptServer() {
 	http.HandleFunc("/ticket", TranscriptServer)
+	http.Handle("/downloads/", http.StripPrefix("/downloads/", http.FileServer(http.Dir("downloads"))))
 	color.Green("Transcript server is running on http://localhost:" + Cfg.Port + "/ticket | https://" + Cfg.TranscriptUrl + "/ticket")
 	log.Fatal(http.ListenAndServe(":"+Cfg.Port, nil))
 }
@@ -132,7 +133,7 @@ func TranscriptServer(w http.ResponseWriter, r *http.Request) {
 			}
 			if len(msg.Attachments) > 0 {
 				for _, attachment := range msg.Attachments {
-					if attachment.Type == "image/jpeg" || attachment.Type == "image/png" || attachment.Type == "image/gif" {
+					if strings.HasPrefix(attachment.Type, "image/") {
 						messagesHTML += `<div class="attachment">
 							<img src="` + attachment.URL + `" alt="` + attachment.Filename + `" />
 						</div>`
