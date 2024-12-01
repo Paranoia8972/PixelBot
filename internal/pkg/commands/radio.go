@@ -107,7 +107,7 @@ func startRadio(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: fmt.Sprintf("Started at: %s", song.StartedAt),
 		},
-		Color: 0x00ff00,
+		Color: 0x248045,
 	}
 
 	stopButton := discordgo.Button{
@@ -256,7 +256,7 @@ func updateNowPlaying(s *discordgo.Session, channelID, messageID string) {
 			Footer: &discordgo.MessageEmbedFooter{
 				Text: fmt.Sprintf("Started at: %s", song.StartedAt),
 			},
-			Color: 0x00ff00,
+			Color: 0x248045,
 		}
 
 		_, err = s.ChannelMessageEditEmbed(channelID, messageID, embedMessage)

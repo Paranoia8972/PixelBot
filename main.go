@@ -2,8 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"io"
-	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -20,8 +18,8 @@ import (
 )
 
 func main() {
-	log.SetFlags(0)
-	log.SetOutput(io.Discard)
+	// log.SetFlags(0)
+	// log.SetOutput(io.Discard)
 
 	// Load config and initialize MongoDB
 	cfg := config.LoadConfig()
@@ -86,10 +84,17 @@ func main() {
 				commands.RandomNumberCommand(s, i)
 			case "chooser":
 				commands.ChooserCommand(s, i)
+<<<<<<< HEAD
 			case "level":
 				commands.LevelCommand(s, i)
 			case "setlevelchannel":
 				commands.SetLevelChannelCommand(s, i)
+=======
+			case "version":
+				commands.VersionCommand(s, i)
+			case "advent":
+				commands.AdventCommand(s, i)
+>>>>>>> main
 			}
 		}
 	})
@@ -104,6 +109,10 @@ func main() {
 				commands.TicketCloseHandler(s, i)
 			case "stop_radio":
 				commands.StopRadio(s, i)
+			default:
+				if strings.HasPrefix(i.MessageComponentData().CustomID, "advent_") {
+					commands.HandleAdventButton(s, i)
+				}
 			}
 		case discordgo.InteractionModalSubmit:
 			switch {

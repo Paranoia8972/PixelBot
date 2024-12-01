@@ -490,6 +490,14 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 				},
 			},
 		},
+		{
+			Name:        "version",
+			Description: "Get the bot's version",
+		},
+		{
+			Name:        "advent",
+			Description: "Advent calendar",
+		},
 	}
 
 	commands := make([]*discordgo.ApplicationCommand, len(Commands))
