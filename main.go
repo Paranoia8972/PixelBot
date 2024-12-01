@@ -38,6 +38,7 @@ func main() {
 	dg.AddHandler(events.Welcome)
 	dg.AddHandler(commands.GiveawayInteractionHandler)
 	dg.AddHandler(commands.HandleVoiceStateUpdate)
+	dg.AddHandler(events.MessageCreate)
 
 	err = dg.Open()
 	if err != nil {
@@ -87,6 +88,10 @@ func main() {
 				commands.VersionCommand(s, i)
 			case "advent":
 				commands.AdventCommand(s, i)
+			case "level":
+				commands.LevelCommand(s, i)
+			case "setlevelchannel":
+				commands.SetLevelChannelCommand(s, i)
 			}
 		}
 	})
