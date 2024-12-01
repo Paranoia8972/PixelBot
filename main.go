@@ -83,6 +83,10 @@ func main() {
 				commands.RandomNumberCommand(s, i)
 			case "chooser":
 				commands.ChooserCommand(s, i)
+			case "version":
+				commands.VersionCommand(s, i)
+			case "advent":
+				commands.AdventCommand(s, i)
 			}
 		}
 	})
@@ -97,6 +101,10 @@ func main() {
 				commands.TicketCloseHandler(s, i)
 			case "stop_radio":
 				commands.StopRadio(s, i)
+			default:
+				if strings.HasPrefix(i.MessageComponentData().CustomID, "advent_") {
+					commands.HandleAdventButton(s, i)
+				}
 			}
 		case discordgo.InteractionModalSubmit:
 			switch {
