@@ -58,7 +58,7 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 			{
 				Title:       "🎉 Giveaway Started! 🎉",
 				Description: "Prize: " + prize + "\nEnds: <t:" + strconv.FormatInt(time.Now().Add(duration).Unix(), 10) + ":R>\nClick the button below to enter!",
-				Color:       0x00FF00,
+				Color:       0x248045,
 				Footer: &discordgo.MessageEmbedFooter{
 					Text: "Good luck!",
 				},

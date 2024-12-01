@@ -68,7 +68,7 @@ func VersionCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				Value: gitHash,
 			},
 		},
-		Color: 0x00ff00, // Green color
+		Color: 0x248045, // Green color
 	}
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

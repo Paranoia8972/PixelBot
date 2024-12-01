@@ -14,7 +14,7 @@ const (
 var EmbedColor = map[EmbedType]int{
 	EmbedTypeWarn:    0xff0000, // Red
 	EmbedTypeInfo:    0x0000ff, // Blue
-	EmbedTypeDefault: 0x00ff00, // Green
+	EmbedTypeDefault: 0x248045, // Green
 }
 
 func CreateEmbed(title, description string, embedType EmbedType, thumbnailURL string) *discordgo.MessageEmbed {

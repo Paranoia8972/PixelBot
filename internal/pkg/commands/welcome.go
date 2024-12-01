@@ -70,7 +70,7 @@ func WelcomeCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					{
 						Title:       "Welcome Channel",
 						Description: "Current welcome channel and message",
-						Color:       0x00ff00,
+						Color:       0x248045,
 						Image: &discordgo.MessageEmbedImage{
 							URL: "https://i.imgur.com/RAClg4Q.png",
 						},

@@ -97,7 +97,7 @@ func AutoRoleGetCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				{
 					Title:       "Auto Roles",
 					Description: "Auto roles for this server.",
-					Color:       0x00ff00,
+					Color:       0x248045,
 					Fields: []*discordgo.MessageEmbedField{
 						{
 							Name:   "Roles",
