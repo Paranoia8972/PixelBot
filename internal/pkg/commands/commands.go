@@ -375,12 +375,25 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 		},
 		{
 			Name:        "level",
-			Description: "Get your current level and XP",
+			Description: "View your level or the level of another user",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "user",
-					Description: "User to get level for",
+					Description: "User to view",
 					Type:        discordgo.ApplicationCommandOptionUser,
+					Required:    false,
+				},
+			},
+		},
+		{
+			Name:                     "setlevelchannel",
+			Description:              "Set the channel for level-up messages",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageChannels}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "channel",
+					Description: "Channel for level-up messages",
+					Type:        discordgo.ApplicationCommandOptionChannel,
 					Required:    true,
 				},
 			},

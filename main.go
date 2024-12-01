@@ -40,6 +40,7 @@ func main() {
 	dg.AddHandler(events.Welcome)
 	dg.AddHandler(commands.GiveawayInteractionHandler)
 	dg.AddHandler(commands.HandleVoiceStateUpdate)
+	dg.AddHandler(events.MessageCreate)
 
 	err = dg.Open()
 	if err != nil {
@@ -73,8 +74,6 @@ func main() {
 				commands.GiveawayCommand(s, i)
 			case "edit":
 				commands.EditCommand(s, i)
-			case "level":
-				commands.LevelCommand(s, i)
 			case "mcstatus":
 				commands.MinecraftStatusCommand(s, i)
 			case "ban":
@@ -87,6 +86,10 @@ func main() {
 				commands.RandomNumberCommand(s, i)
 			case "chooser":
 				commands.ChooserCommand(s, i)
+			case "level":
+				commands.LevelCommand(s, i)
+			case "setlevelchannel":
+				commands.SetLevelChannelCommand(s, i)
 			}
 		}
 	})
