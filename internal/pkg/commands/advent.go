@@ -3,14 +3,20 @@ package commands
 import (
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
 func AdventCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	// currentDay := time.Now().Day()
-	currentDay := 7
+	currentDay := time.Now().Day()
+	currentMonth := time.Now().Month()
+	currentYear := time.Now().Year()
+
+	if currentYear > 2024 || (currentYear == 2024 && currentMonth == time.December && currentDay > 24) {
+		currentDay = 24
+	}
 	userID := i.Member.User.ID
 
 	adventClick, err := utils.GetAdventClick(userID)
