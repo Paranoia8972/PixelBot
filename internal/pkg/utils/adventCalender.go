@@ -1,9 +1,13 @@
 package utils
 
 import (
+	"context"
+	"fmt"
 	"log"
 
+	"github.com/Paranoia8972/PixelBot/internal/db"
 	"github.com/bwmarrin/discordgo"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func Advent1(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -22,9 +26,46 @@ func Advent1(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func Advent2(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	userID := i.Member.User.ID
+	guildID := i.GuildID
+
+	var adventClick AdventClick
+	collection := db.GetCollection(cfg.DBName, "advent_clicks")
+	filter := bson.M{"user_id": userID}
+	err := collection.FindOne(context.Background(), filter).Decode(&adventClick)
+	if err == nil {
+		for _, day := range adventClick.LevelUpDays {
+			if day == "2" {
+				embed := &discordgo.MessageEmbed{
+					Title:       "🎄 Advent Calendar: 2. December",
+					Description: "You have already received the level-up for today.",
+					Color:       0x248045,
+				}
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{embed},
+						Flags:  64,
+					},
+				})
+				return
+			}
+		}
+	}
+
+	_, currentLevel := GetUserXPLevel(guildID, userID)
+	newLevel := currentLevel + 1
+	newXP := 0
+	SetUserXPLevel(guildID, userID, newXP, newLevel)
+
+	err = StoreAdventClick(userID, i.Member.User.Username, "", "2")
+	if err != nil {
+		log.Println(err)
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Title:       "🎄 Advent Calendar: 2. December",
-		Description: "You've received a Levelup! 🎉",
+		Description: fmt.Sprintf("You've received a Levelup! 🎉 You are now level %d", newLevel),
 		Color:       0x248045,
 	}
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -67,9 +108,46 @@ func Advent4(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func Advent5(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	userID := i.Member.User.ID
+	guildID := i.GuildID
+
+	var adventClick AdventClick
+	collection := db.GetCollection(cfg.DBName, "advent_clicks")
+	filter := bson.M{"user_id": userID}
+	err := collection.FindOne(context.Background(), filter).Decode(&adventClick)
+	if err == nil {
+		for _, day := range adventClick.LevelUpDays {
+			if day == "5" {
+				embed := &discordgo.MessageEmbed{
+					Title:       "🎄 Advent Calendar: 5. December",
+					Description: "You have already received the level-up for today.",
+					Color:       0x248045,
+				}
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{embed},
+						Flags:  64,
+					},
+				})
+				return
+			}
+		}
+	}
+
+	_, currentLevel := GetUserXPLevel(guildID, userID)
+	newLevel := currentLevel + 1
+	newXP := 0
+	SetUserXPLevel(guildID, userID, newXP, newLevel)
+
+	err = StoreAdventClick(userID, i.Member.User.Username, "", "2")
+	if err != nil {
+		log.Println(err)
+	}
+
 	embed := &discordgo.MessageEmbed{
-		Title:       "🎁 Advent Calendar: 5. December",
-		Description: "You've received a Levelup! 🎉",
+		Title:       "🎄 Advent Calendar: 5. December",
+		Description: fmt.Sprintf("You've received a Levelup! 🎉 You are now level %d", newLevel),
 		Color:       0x248045,
 	}
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -112,9 +190,46 @@ func Advent7(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func Advent8(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	userID := i.Member.User.ID
+	guildID := i.GuildID
+
+	var adventClick AdventClick
+	collection := db.GetCollection(cfg.DBName, "advent_clicks")
+	filter := bson.M{"user_id": userID}
+	err := collection.FindOne(context.Background(), filter).Decode(&adventClick)
+	if err == nil {
+		for _, day := range adventClick.LevelUpDays {
+			if day == "8" {
+				embed := &discordgo.MessageEmbed{
+					Title:       "🎄 Advent Calendar: 8. December",
+					Description: "You have already received the level-up for today.",
+					Color:       0x248045,
+				}
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{embed},
+						Flags:  64,
+					},
+				})
+				return
+			}
+		}
+	}
+
+	_, currentLevel := GetUserXPLevel(guildID, userID)
+	newLevel := currentLevel + 1
+	newXP := 0
+	SetUserXPLevel(guildID, userID, newXP, newLevel)
+
+	err = StoreAdventClick(userID, i.Member.User.Username, "", "2")
+	if err != nil {
+		log.Println(err)
+	}
+
 	embed := &discordgo.MessageEmbed{
-		Title:       "🕯️🕯️ Second Advent: 8. December",
-		Description: "You've received a Levelup! 🎉",
+		Title:       "🎄 Advent Calendar: 8. December",
+		Description: fmt.Sprintf("You've received a Levelup! 🎉 You are now level %d", newLevel),
 		Color:       0x248045,
 	}
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -236,9 +351,46 @@ func Advent15(s *discordgo.Session, i *discordgo.InteractionCreate) {
 }
 
 func Advent16(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	userID := i.Member.User.ID
+	guildID := i.GuildID
+
+	var adventClick AdventClick
+	collection := db.GetCollection(cfg.DBName, "advent_clicks")
+	filter := bson.M{"user_id": userID}
+	err := collection.FindOne(context.Background(), filter).Decode(&adventClick)
+	if err == nil {
+		for _, day := range adventClick.LevelUpDays {
+			if day == "16" {
+				embed := &discordgo.MessageEmbed{
+					Title:       "🎄 Advent Calendar: 16. December",
+					Description: "You have already received the level-up for today.",
+					Color:       0x248045,
+				}
+				s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{
+						Embeds: []*discordgo.MessageEmbed{embed},
+						Flags:  64,
+					},
+				})
+				return
+			}
+		}
+	}
+
+	_, currentLevel := GetUserXPLevel(guildID, userID)
+	newLevel := currentLevel + 1
+	newXP := 0
+	SetUserXPLevel(guildID, userID, newXP, newLevel)
+
+	err = StoreAdventClick(userID, i.Member.User.Username, "", "2")
+	if err != nil {
+		log.Println(err)
+	}
+
 	embed := &discordgo.MessageEmbed{
 		Title:       "🎄 Advent Calendar: 16. December",
-		Description: "You've received a Levelup! 🎉",
+		Description: fmt.Sprintf("You've received a Levelup! 🎉 You are now level %d", newLevel),
 		Color:       0x248045,
 	}
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

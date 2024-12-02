@@ -3,42 +3,105 @@ package commands
 import (
 	"log"
 	"strconv"
-	"time"
 
 	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
 	"github.com/bwmarrin/discordgo"
 )
 
-// var debugDay int
-
-// func init() {
-// 	SetDebugDay(24)
-// }
-
 func AdventCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	currentDay := time.Now().Day()
-	//* debugDay start
-	// if debugDay >= 1 && debugDay <= 24 {
-	// 	currentDay = debugDay
-	// }
-	//* debugDay end
+	// currentDay := time.Now().Day()
+	currentDay := 7
+	userID := i.Member.User.ID
+
+	adventClick, err := utils.GetAdventClick(userID)
+	if err != nil {
+		log.Printf("Failed to retrieve advent clicks: %v", err)
+	}
+
+	emojis := map[int]string{
+		1:  "1313186442557526026",
+		2:  "1313186433170800734",
+		3:  "1313186420952662027",
+		4:  "1313186411494768681",
+		5:  "1313186401701068920",
+		6:  "1313186389390655508",
+		7:  "1313186379211210752",
+		8:  "1313186370742915152",
+		9:  "1313186360508551198",
+		10: "1313186351885058129",
+		11: "1313183932228960256",
+		12: "1313183956258127933",
+		13: "1313183970149797989",
+		14: "1313183993109151845",
+		15: "1313184006900289558",
+		16: "1313184022767206441",
+		17: "1313184038885916733",
+		18: "1313184058611601418",
+		19: "1313184073585528922",
+		20: "1313184088185634867",
+		21: "1313184102765170830",
+		22: "1313184114882379978",
+		23: "1313184129273303150",
+		24: "1313184144708210769",
+	}
+
+	emojiNames := map[int]string{
+		1:  "1_",
+		2:  "2_",
+		3:  "3_",
+		4:  "4_",
+		5:  "5_",
+		6:  "6_",
+		7:  "7_",
+		8:  "8_",
+		9:  "9_",
+		10: "10",
+		11: "11",
+		12: "12",
+		13: "13",
+		14: "14",
+		15: "15",
+		16: "16",
+		17: "17",
+		18: "18",
+		19: "19",
+		20: "20",
+		21: "21",
+		22: "22",
+		23: "23",
+		24: "24",
+	}
+
 	var buttons []discordgo.MessageComponent
 	for j := 1; j <= 24; j++ {
 		style := discordgo.SecondaryButton
 		disabled := true
-		label := strconv.Itoa(j)
+		emojiID := emojis[j]
+		emojiName := emojiNames[j]
+
 		if j <= currentDay {
 			style = discordgo.SuccessButton
 			disabled = false
 		}
-		if j == currentDay {
-			label = "🎄 " + label
+
+		// Check if the button has been clicked by the user
+		if adventClick != nil && utils.HasButtonBeenClicked(adventClick, "advent_"+strconv.Itoa(j)) {
+			emojiID = ""
+			emojiName = "🔓"
 		}
+
+		if j == currentDay {
+			style = discordgo.DangerButton
+		}
+
 		buttons = append(buttons, discordgo.Button{
-			Label:    label,
 			CustomID: "advent_" + strconv.Itoa(j),
 			Style:    style,
 			Disabled: disabled,
+			Emoji: &discordgo.ComponentEmoji{
+				ID:   emojiID,
+				Name: emojiName,
+			},
 		})
 	}
 
@@ -50,12 +113,15 @@ func AdventCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	embed := &discordgo.MessageEmbed{
-		Title:       "Advent Calendar",
-		Description: "# Advent, Advent, a little light is burning! 🎄🎁",
-		Color:       0x248045,
+		Title:       "🎄 Advent Calendar - Day " + strconv.Itoa(currentDay),
+		Description: "## Open today's surprise gift! Check back daily for more festive surprises! 🎁",
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: "Happy holidays from the OnThePixel.net team! 🎅",
+		},
+		Color: 0x248045,
 	}
 
-	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+	err = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds:     []*discordgo.MessageEmbed{embed},
@@ -77,7 +143,10 @@ func HandleAdventButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		log.Printf("Invalid button ID: %v", err)
 		return
 	}
-	err = utils.StoreAdventClick(userID, username, buttonID)
+
+	levelUpDay := strconv.Itoa(day)
+
+	err = utils.StoreAdventClick(userID, username, buttonID, levelUpDay)
 	if err != nil {
 		log.Printf("Failed to store advent click: %v", err)
 	}
@@ -98,29 +167,14 @@ func HandleAdventButton(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		13: utils.Advent13,
 		14: utils.Advent14,
 		15: utils.Advent15,
-		16: utils.Advent16,
-		17: utils.Advent17,
-		18: utils.Advent18,
-		19: utils.Advent19,
-		20: utils.Advent20,
-		21: utils.Advent21,
-		22: utils.Advent22,
-		23: utils.Advent23,
-		24: utils.Advent24,
 	}
 
-	if adventFunc, ok := adventFunctions[day]; ok {
+	if adventFunc, exists := adventFunctions[day]; exists {
 		adventFunc(s, i)
+	} else {
+		log.Printf("No advent function found for day %d", day)
 	}
 }
-
-// func SetDebugDay(day int) {
-// 	if day >= 1 && day <= 24 {
-// 		debugDay = day
-// 	} else {
-// 		debugDay = 0
-// 	}
-// }
 
 func min(a, b int) int {
 	if a < b {
