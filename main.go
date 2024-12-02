@@ -130,6 +130,15 @@ func main() {
 		}
 	})
 
+	dg.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		if i.Type == discordgo.InteractionApplicationCommand {
+			switch i.ApplicationCommandData().Name {
+			case "Say Hello":
+				commands.SayHello(s, i)
+			}
+		}
+	})
+
 	// start transcript server in goroutine
 	go transcript.StartTranscriptServer()
 	go commands.StartBackgroundWorker(dg)

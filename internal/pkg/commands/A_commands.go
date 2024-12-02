@@ -498,6 +498,10 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			Name:        "advent",
 			Description: "Advent calendar",
 		},
+		{
+			Name: "Say Hello",
+			Type: discordgo.MessageApplicationCommand,
+		},
 	}
 
 	commands := make([]*discordgo.ApplicationCommand, len(Commands))
