@@ -11,7 +11,6 @@ func EditCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	case discordgo.InteractionApplicationCommand:
 		messageID := i.ApplicationCommandData().Options[0].StringValue()
 
-		// Retrieve the message content
 		msg, err := s.ChannelMessage(i.ChannelID, messageID)
 		if err != nil {
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -24,7 +23,6 @@ func EditCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 
-		// Open modal with the message content
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseModal,
 			Data: &discordgo.InteractionResponseData{
@@ -47,14 +45,12 @@ func EditCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		})
 
 	case discordgo.InteractionModalSubmit:
-		// Extract message ID from CustomID
 		if !strings.HasPrefix(i.ModalSubmitData().CustomID, "edit_modal_") {
 			return
 		}
 		messageID := strings.TrimPrefix(i.ModalSubmitData().CustomID, "edit_modal_")
 		newContent := i.ModalSubmitData().Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
 
-		// Edit the message with new content
 		_, err := s.ChannelMessageEdit(i.ChannelID, messageID, newContent)
 		if err != nil {
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -67,7 +63,6 @@ func EditCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			return
 		}
 
-		// Acknowledge the modal submission
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseDeferredMessageUpdate,
 		})

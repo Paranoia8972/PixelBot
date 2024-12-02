@@ -10,7 +10,6 @@ const (
 	EmbedTypeDefault EmbedType = "default"
 )
 
-// EmbedColor maps embed types to colors
 var EmbedColor = map[EmbedType]int{
 	EmbedTypeWarn:    0xff0000, // Red
 	EmbedTypeInfo:    0x0000ff, // Blue
