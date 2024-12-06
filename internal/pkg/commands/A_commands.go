@@ -386,31 +386,6 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
-			Name:        "level",
-			Description: "View your level or the level of another user",
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Name:        "user",
-					Description: "User to view",
-					Type:        discordgo.ApplicationCommandOptionUser,
-					Required:    false,
-				},
-			},
-		},
-		{
-			Name:                     "setlevelchannel",
-			Description:              "Set the channel for level-up messages",
-			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageChannels}[0],
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Name:        "channel",
-					Description: "Channel for level-up messages",
-					Type:        discordgo.ApplicationCommandOptionChannel,
-					Required:    true,
-				},
-			},
-		},
-		{
 			Name:                     "ban",
 			Description:              "Ban a user from the server",
 			DefaultMemberPermissions: &[]int64{discordgo.PermissionBanMembers}[0],
@@ -497,6 +472,75 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 		{
 			Name:        "advent",
 			Description: "Advent calendar",
+		},
+		{
+			Name:        "level",
+			Description: "View your level or the level of another user",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "user",
+					Description: "User to view",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Required:    false,
+				},
+			},
+		},
+		{
+			Name:                     "leveling",
+			Description:              "Manage leveling system",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageChannels}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "set_reward",
+					Description: "Set the reward for a level",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "level",
+							Description: "Level to set the reward for",
+							Type:        discordgo.ApplicationCommandOptionInteger,
+							Required:    true,
+						},
+						{
+							Name:        "role",
+							Description: "Role to give as a reward",
+							Type:        discordgo.ApplicationCommandOptionRole,
+							Required:    true,
+						},
+					},
+				},
+				{
+					Name:        "get_reward",
+					Description: "Get the reward for a level",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+				{
+					Name:        "remove_reward",
+					Description: "Remove the reward for a level",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "level",
+							Description: "Level to remove the reward for",
+							Type:        discordgo.ApplicationCommandOptionInteger,
+							Required:    true,
+						},
+					},
+				},
+				{
+					Name:        "setlevelchannel",
+					Description: "Set the channel for level-up messages",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "channel",
+							Description: "Channel for level-up messages",
+							Type:        discordgo.ApplicationCommandOptionChannel,
+							Required:    true,
+						},
+					},
+				},
+			},
 		},
 		{
 			Name: "Say Hello",
