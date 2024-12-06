@@ -92,8 +92,8 @@ func main() {
 				commands.AdventCommand(s, i)
 			case "level":
 				commands.LevelCommand(s, i)
-			case "setlevelchannel":
-				commands.SetLevelChannelCommand(s, i)
+			case "leveling":
+				commands.LevelingCommand(s, i)
 			}
 		}
 	})
