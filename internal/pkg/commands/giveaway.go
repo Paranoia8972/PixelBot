@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/Paranoia8972/PixelBot/internal/db"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
+
 	"github.com/bwmarrin/discordgo"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -47,9 +49,9 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 	winnersCount := int(options[1].IntValue())
 	prize := options[2].StringValue()
 
-	duration, err := time.ParseDuration(durationStr)
+	duration, err := utils.ParseDuration(durationStr)
 	if err != nil {
-		RespondWithMessage(s, i, "Invalid duration format.")
+		RespondWithMessage(s, i, "Invalid duration format. Use format like: 2d, 4h, 30m")
 		return
 	}
 
@@ -64,12 +66,23 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 				},
 			},
 		},
-		Components: []discordgo.MessageComponent{
+	}
+
+	msg, err := s.ChannelMessageSendComplex(i.ChannelID, msgSend)
+	if err != nil {
+		RespondWithMessage(s, i, "Failed to send giveaway message.")
+		return
+	}
+
+	msgEdit := &discordgo.MessageEdit{
+		ID:      msg.ID,
+		Channel: i.ChannelID,
+		Components: &[]discordgo.MessageComponent{
 			discordgo.ActionsRow{
 				Components: []discordgo.MessageComponent{
 					discordgo.Button{
 						Label:    "Enter Giveaway",
-						CustomID: "giveaway_enter_" + strconv.FormatInt(time.Now().Unix(), 10),
+						CustomID: "giveaway_enter_" + msg.ID,
 						Style:    discordgo.PrimaryButton,
 					},
 				},
@@ -77,10 +90,9 @@ func startGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, options
 		},
 	}
 
-	msg, err := s.ChannelMessageSendComplex(i.ChannelID, msgSend)
-
+	_, err = s.ChannelMessageEditComplex(msgEdit)
 	if err != nil {
-		RespondWithMessage(s, i, "Failed to send giveaway message.")
+		RespondWithMessage(s, i, "Failed to add button to giveaway message.")
 		return
 	}
 
