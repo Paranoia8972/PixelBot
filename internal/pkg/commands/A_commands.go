@@ -455,13 +455,45 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 		},
 		{
 			Name:        "chooser",
-			Description: "Choose a random item from a list",
+			Description: "Choose a random item from a list or message reactions",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
-					Name:        "items",
-					Description: "List of items to choose from, seperated by commas",
-					Type:        discordgo.ApplicationCommandOptionString,
-					Required:    true,
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "list",
+					Description: "Choose from a comma-separated list",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "items",
+							Description: "List of items to choose from, separated by commas",
+							Type:        discordgo.ApplicationCommandOptionString,
+							Required:    true,
+						},
+						{
+							Name:        "amount",
+							Description: "Number of items to choose",
+							Type:        discordgo.ApplicationCommandOptionInteger,
+							Required:    false,
+						},
+					},
+				},
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "message",
+					Description: "Choose from users who reacted to a message",
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "message_id",
+							Description: "ID of the message to choose from",
+							Type:        discordgo.ApplicationCommandOptionString,
+							Required:    true,
+						},
+						{
+							Name:        "amount",
+							Description: "Number of users to choose",
+							Type:        discordgo.ApplicationCommandOptionInteger,
+							Required:    false,
+						},
+					},
 				},
 			},
 		},
