@@ -25,7 +25,6 @@ func getLatestGitHash() (string, error) {
 		return "", err
 	}
 
-	// Set the GitHub token if available
 	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
@@ -68,7 +67,7 @@ func VersionCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				Value: gitHash,
 			},
 		},
-		Color: 0x248045, // Green color
+		Color: 0x248045,
 	}
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

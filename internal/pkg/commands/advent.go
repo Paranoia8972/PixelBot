@@ -90,7 +90,6 @@ func AdventCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			disabled = false
 		}
 
-		// Check if the button has been clicked by the user
 		if adventClick != nil && utils.HasButtonBeenClicked(adventClick, "advent_"+strconv.Itoa(j)) {
 			emojiID = ""
 			emojiName = "🔓"

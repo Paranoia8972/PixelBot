@@ -71,6 +71,12 @@ func LevelingCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		GetLevelRewardsCommand(s, i)
 	case "remove_reward":
 		RemoveLevelRewardCommand(s, i.GuildID, i.Member.User.ID)
+	case "set_channel_requirement":
+		SetChannelRequirementCommand(s, i)
+	case "get_channel_requirement":
+		GetChannelRequirementsCommand(s, i)
+	case "delete_channel_requirement":
+		DeleteChannelRequirementCommand(s, i)
 	default:
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -113,8 +119,9 @@ func SetLevelChannelCommand(s *discordgo.Session, i *discordgo.InteractionCreate
 }
 
 func AddLevelRewardCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	cmdOptions := i.ApplicationCommandData().Options
-	level := cmdOptions[0].IntValue()
+	cmdOptions := i.ApplicationCommandData().Options[0].Options
+
+	level := int(cmdOptions[0].IntValue())
 	role := cmdOptions[1].RoleValue(s, i.GuildID)
 
 	guildID := i.GuildID
@@ -236,4 +243,135 @@ func RemoveLevelRewardCommand(s *discordgo.Session, guildID, userID string) {
 			}
 		}
 	}
+}
+
+func SetChannelRequirementCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	cmdOptions := i.ApplicationCommandData().Options[0].Options
+	channel := cmdOptions[0].ChannelValue(s)
+	requiredLevel := cmdOptions[1].IntValue()
+	guildID := i.GuildID
+
+	_, err := db.GetCollection(cfg.DBName, "channel_requirements").UpdateOne(
+		context.TODO(),
+		bson.M{
+			"guild_id":   guildID,
+			"channel_id": channel.ID,
+		},
+		bson.M{
+			"$set": bson.M{
+				"required_level": requiredLevel,
+			},
+		},
+		options.Update().SetUpsert(true),
+	)
+
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Failed to set channel requirement.",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: fmt.Sprintf("Set level requirement for <#%s> to level %d", channel.ID, requiredLevel),
+			Flags:   64,
+		},
+	})
+}
+
+func GetChannelRequirementsCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	guildID := i.GuildID
+
+	cursor, err := db.GetCollection(cfg.DBName, "channel_requirements").Find(
+		context.TODO(),
+		bson.M{"guild_id": guildID},
+	)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Failed to fetch channel requirements",
+				Flags:   64,
+			},
+		})
+		return
+	}
+	defer cursor.Close(context.TODO())
+
+	var requirements []struct {
+		ChannelID     string `bson:"channel_id"`
+		RequiredLevel int    `bson:"required_level"`
+	}
+	if err = cursor.All(context.TODO(), &requirements); err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Failed to process requirements",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	if len(requirements) == 0 {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "No channel requirements set",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	content := "Channel Level Requirements:\n"
+	for _, req := range requirements {
+		content += fmt.Sprintf("<#%s>: Level %d\n", req.ChannelID, req.RequiredLevel)
+	}
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: content,
+			Flags:   64,
+		},
+	})
+}
+
+func DeleteChannelRequirementCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	channel := i.ApplicationCommandData().Options[0].Options[0].ChannelValue(s)
+	guildID := i.GuildID
+
+	result, err := db.GetCollection(cfg.DBName, "channel_requirements").DeleteOne(
+		context.TODO(),
+		bson.M{
+			"guild_id":   guildID,
+			"channel_id": channel.ID,
+		},
+	)
+
+	if err != nil || result.DeletedCount == 0 {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "No requirement found for this channel",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: fmt.Sprintf("Removed level requirement for <#%s>", channel.ID),
+			Flags:   64,
+		},
+	})
 }

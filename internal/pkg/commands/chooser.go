@@ -106,7 +106,6 @@ func ChooserCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		return
 	}
 
-	// Handle list of items
 	items := strings.Split(cmdOptions[0].StringValue(), ",")
 	for i := range items {
 		items[i] = strings.TrimSpace(items[i])
@@ -126,7 +125,6 @@ func ChooserCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		amount = len(items)
 	}
 
-	// Choose multiple unique items
 	chosen := make([]string, 0, amount)
 	tempItems := make([]string, len(items))
 	copy(tempItems, items)

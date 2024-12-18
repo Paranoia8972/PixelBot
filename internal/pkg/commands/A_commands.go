@@ -32,9 +32,8 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			Description: "Responds with the Bot's latency.",
 		},
 		{
-			Name:                     "clear",
-			Description:              "Deletes messages from a channel.",
-			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageMessages}[0],
+			Name:        "clear",
+			Description: "Deletes messages from a channel.",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Name:        "count",
@@ -560,6 +559,43 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 					},
 				},
 				{
+					Name:        "set_channel_requirement",
+					Description: "Set the level requirement for a channel",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "channel",
+							Description: "Channel to set the requirement for",
+							Type:        discordgo.ApplicationCommandOptionChannel,
+							Required:    true,
+						},
+						{
+							Name:        "requirement",
+							Description: "The level required to send messages in the channel",
+							Type:        discordgo.ApplicationCommandOptionInteger,
+							Required:    true,
+						},
+					},
+				},
+				{
+					Name:        "get_channel_requirement",
+					Description: "Get the level requirement for your server",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+				{
+					Name:        "delete_channel_requirement",
+					Description: "Delete the level requirement for a channel",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "channel",
+							Description: "Channel to delete the requirement for",
+							Type:        discordgo.ApplicationCommandOptionChannel,
+							Required:    true,
+						},
+					},
+				},
+				{
 					Name:        "setlevelchannel",
 					Description: "Set the channel for level-up messages",
 					Type:        discordgo.ApplicationCommandOptionSubCommand,
@@ -576,6 +612,10 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 		},
 		{
 			Name: "Say Hello",
+			Type: discordgo.MessageApplicationCommand,
+		},
+		{
+			Name: "restart",
 			Type: discordgo.MessageApplicationCommand,
 		},
 	}

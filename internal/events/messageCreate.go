@@ -30,7 +30,7 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(levelUpChannelID, fmt.Sprintf("Congratulations %s, you've reached level %d!", m.Author.Mention(), newLevel))
 		}
 
-		utils.GiveLevelRewards(s, guildID, userID, newLevel)
+		utils.GiveLevelRewards(s, guildID, newLevel)
 	} else {
 		utils.SetUserXPLevel(guildID, userID, newXP, currentLevel)
 	}
