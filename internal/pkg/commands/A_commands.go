@@ -611,6 +611,58 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
+			Name:                     "status",
+			Description:              "Manage bot status messages",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageServer}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "add",
+					Description: "Add a new status",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "message",
+							Description: "Status message to display",
+							Type:        discordgo.ApplicationCommandOptionString,
+							Required:    true,
+						},
+						{
+							Name:        "type",
+							Description: "Activity type",
+							Type:        discordgo.ApplicationCommandOptionInteger,
+							Required:    true,
+							Choices: []*discordgo.ApplicationCommandOptionChoice{
+								{Name: "Playing", Value: 0},
+								{Name: "Streaming", Value: 1},
+								{Name: "Listening", Value: 2},
+								{Name: "Watching", Value: 3},
+								{Name: "Custom", Value: 4},
+								{Name: "Competing", Value: 5},
+							},
+						},
+					},
+				},
+				{
+					Name:        "remove",
+					Description: "Remove a status",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "message",
+							Description: "Status message to remove",
+							Type:        discordgo.ApplicationCommandOptionString,
+							Required:    true,
+						},
+					},
+				},
+				{
+					Name:        "list",
+					Description: "List all statuses",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+			},
+		},
+		{
 			Name: "Say Hello",
 			Type: discordgo.MessageApplicationCommand,
 		},
