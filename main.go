@@ -94,6 +94,8 @@ func main() {
 				commands.LevelCommand(s, i)
 			case "leveling":
 				commands.LevelingCommand(s, i)
+			case "status":
+				commands.StatusCommand(s, i)
 			}
 		}
 	})
