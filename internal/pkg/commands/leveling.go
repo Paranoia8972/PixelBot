@@ -251,7 +251,79 @@ func SetChannelRequirementCommand(s *discordgo.Session, i *discordgo.Interaction
 	requiredLevel := cmdOptions[1].IntValue()
 	guildID := i.GuildID
 
-	_, err := db.GetCollection(cfg.DBName, "channel_requirements").UpdateOne(
+	roleName := fmt.Sprintf("Level %d", requiredLevel)
+	var roleID string
+
+	roles, err := s.GuildRoles(guildID)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Failed to get guild roles",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	for _, role := range roles {
+		if role.Name == roleName {
+			roleID = role.ID
+			break
+		}
+	}
+
+	if roleID == "" {
+		color := 0x00FF00
+		perms := int64(discordgo.PermissionSendMessages)
+		hoist := true
+
+		newRole, err := s.GuildRoleCreate(guildID, &discordgo.RoleParams{
+			Name:        roleName,
+			Color:       &color,
+			Permissions: &perms,
+			Hoist:       &hoist,
+		})
+		if err != nil {
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Failed to create role",
+					Flags:   64,
+				},
+			})
+			return
+		}
+		roleID = newRole.ID
+	}
+
+	err = s.ChannelPermissionSet(channel.ID, guildID, discordgo.PermissionOverwriteTypeRole,
+		0, discordgo.PermissionSendMessages)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Failed to set @everyone permissions",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	err = s.ChannelPermissionSet(channel.ID, roleID, discordgo.PermissionOverwriteTypeRole,
+		discordgo.PermissionSendMessages, 0)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Failed to set role permissions",
+				Flags:   64,
+			},
+		})
+		return
+	}
+
+	_, err = db.GetCollection(cfg.DBName, "channel_requirements").UpdateOne(
 		context.TODO(),
 		bson.M{
 			"guild_id":   guildID,
@@ -260,6 +332,7 @@ func SetChannelRequirementCommand(s *discordgo.Session, i *discordgo.Interaction
 		bson.M{
 			"$set": bson.M{
 				"required_level": requiredLevel,
+				"role_id":        roleID,
 			},
 		},
 		options.Update().SetUpsert(true),
@@ -269,7 +342,7 @@ func SetChannelRequirementCommand(s *discordgo.Session, i *discordgo.Interaction
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: "Failed to set channel requirement.",
+				Content: "Failed to store requirement",
 				Flags:   64,
 			},
 		})
@@ -283,6 +356,61 @@ func SetChannelRequirementCommand(s *discordgo.Session, i *discordgo.Interaction
 			Flags:   64,
 		},
 	})
+}
+
+func DeleteChannelRequirementCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	channel := i.ApplicationCommandData().Options[0].Options[0].ChannelValue(s)
+	guildID := i.GuildID
+
+	var requirement struct {
+		RoleID string `bson:"role_id"`
+	}
+
+	err := db.GetCollection(cfg.DBName, "channel_requirements").FindOne(
+		context.TODO(),
+		bson.M{
+			"guild_id":   guildID,
+			"channel_id": channel.ID,
+		},
+	).Decode(&requirement)
+
+	if err == nil && requirement.RoleID != "" {
+		err = s.ChannelPermissionDelete(channel.ID, guildID)
+		if err != nil {
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Failed to reset @everyone permissions",
+					Flags:   64,
+				},
+			})
+			return
+		}
+
+		err = s.ChannelPermissionDelete(channel.ID, requirement.RoleID)
+		if err != nil {
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Failed to reset role permissions",
+					Flags:   64,
+				},
+			})
+			return
+		}
+
+		err = s.GuildRoleDelete(guildID, requirement.RoleID)
+		if err != nil {
+			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: "Failed to delete role",
+					Flags:   64,
+				},
+			})
+			return
+		}
+	}
 }
 
 func GetChannelRequirementsCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -339,38 +467,6 @@ func GetChannelRequirementsCommand(s *discordgo.Session, i *discordgo.Interactio
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: content,
-			Flags:   64,
-		},
-	})
-}
-
-func DeleteChannelRequirementCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	channel := i.ApplicationCommandData().Options[0].Options[0].ChannelValue(s)
-	guildID := i.GuildID
-
-	result, err := db.GetCollection(cfg.DBName, "channel_requirements").DeleteOne(
-		context.TODO(),
-		bson.M{
-			"guild_id":   guildID,
-			"channel_id": channel.ID,
-		},
-	)
-
-	if err != nil || result.DeletedCount == 0 {
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "No requirement found for this channel",
-				Flags:   64,
-			},
-		})
-		return
-	}
-
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf("Removed level requirement for <#%s>", channel.ID),
 			Flags:   64,
 		},
 	})
