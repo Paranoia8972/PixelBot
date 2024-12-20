@@ -126,6 +126,8 @@ func main() {
 				commands.SayCommand(s, i)
 			case strings.HasPrefix(i.ModalSubmitData().CustomID, "edit_modal_"):
 				commands.EditCommand(s, i)
+			case strings.HasPrefix(i.ModalSubmitData().CustomID, "dm_modal_"):
+				commands.DMCommand(s, i)
 			default:
 				commands.TicketModalSubmitHandler(s, i)
 			}
