@@ -706,6 +706,19 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
+			Name:                     "dmlog",
+			Description:              "Set the channel for logging DMs",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "channel",
+					Description: "Channel to log DMs in",
+					Type:        discordgo.ApplicationCommandOptionChannel,
+					Required:    true,
+				},
+			},
+		},
+		{
 			Name: "Say Hello",
 			Type: discordgo.MessageApplicationCommand,
 		},

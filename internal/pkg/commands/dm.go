@@ -10,7 +10,6 @@ import (
 func DMCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	switch i.Type {
 	case discordgo.InteractionApplicationCommand:
-		// Open modal for message input
 		err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseModal,
 			Data: &discordgo.InteractionResponseData{
@@ -36,19 +35,16 @@ func DMCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		}
 
 	case discordgo.InteractionModalSubmit:
-		// Handle modal submission
 		data := i.ModalSubmitData()
 		userID := strings.TrimPrefix(data.CustomID, "dm_modal_")
 		message := data.Components[0].(*discordgo.ActionsRow).Components[0].(*discordgo.TextInput).Value
 
-		// Create DM channel
 		channel, err := s.UserChannelCreate(userID)
 		if err != nil {
 			RespondWithMessage(s, i, "Failed to create DM channel")
 			return
 		}
 
-		// Send message
 		_, err = s.ChannelMessageSend(channel.ID, message)
 		if err != nil {
 			RespondWithMessage(s, i, "Failed to send DM")

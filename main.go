@@ -101,6 +101,8 @@ func main() {
 				commands.CountingCommand(s, i)
 			case "dm":
 				commands.DMCommand(s, i)
+			case "dmlog":
+				commands.DMLogCommand(s, i)
 			}
 		}
 	})
