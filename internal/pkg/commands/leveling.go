@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/Paranoia8972/PixelBot/internal/db"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/utils"
@@ -21,33 +20,28 @@ func LevelCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	} else {
 		user = i.Member.User
 	}
-	guildID := i.GuildID
-	userID := user.ID
 
-	currentXP, currentLevel := utils.GetUserXPLevel(guildID, userID)
-	xpNeeded := utils.CalculateXPNeeded(currentLevel)
-
-	embed := &discordgo.MessageEmbed{
-		Title: fmt.Sprintf("Level for %s", user.Username),
-		Fields: []*discordgo.MessageEmbedField{
-			{
-				Name:   "Level",
-				Value:  strconv.Itoa(currentLevel),
-				Inline: true,
+	imgBuf, err := utils.GenerateLevelImage(s, user, i.GuildID)
+	if err != nil {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: "Failed to generate level card.",
+				Flags:   64,
 			},
-			{
-				Name:   "XP",
-				Value:  fmt.Sprintf("%d/%d", currentXP, xpNeeded),
-				Inline: true,
-			},
-		},
-		Color: 0x00FF00,
+		})
+		return
 	}
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{embed},
+			Files: []*discordgo.File{
+				{
+					Name:   "level.png",
+					Reader: imgBuf,
+				},
+			},
 		},
 	})
 }
