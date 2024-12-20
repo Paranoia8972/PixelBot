@@ -38,6 +38,9 @@ A feature-rich Discord bot written in Go for managing gaming communities and Min
 ## 🚧 Work in Progress
 
 - [ ] Advanced Ticket system
+- [x] Counting game
+- [ ] Advamced Leveling system
+- [ ] Setup command
 
 ## 📝 Prerequisites
 
