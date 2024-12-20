@@ -277,7 +277,7 @@ func GenerateLevelImage(s *discordgo.Session, user *discordgo.User, guildID stri
 
 	xp, level := GetUserXPLevel(guildID, user.ID)
 	weeklyXP := GetWeeklyXP(guildID, user.ID)
-	totalRank, totalUsers := GetUserRank(guildID, user.ID, false)
+	totalRank, _ := GetUserRank(guildID, user.ID, false)
 	weeklyRank, _ := GetUserRank(guildID, user.ID, true)
 	xpNeeded := CalculateXPNeeded(level)
 
@@ -298,7 +298,7 @@ func GenerateLevelImage(s *discordgo.Session, user *discordgo.User, guildID stri
 
 	// Server rank
 	dc.SetRGB(0.4, 0.8, 1.0)
-	dc.DrawStringAnchored(fmt.Sprintf("%d/%d", totalRank, totalUsers), 215, 120, 0.5, 0)
+	dc.DrawStringAnchored(fmt.Sprintf("%d", totalRank), 215, 120, 0.5, 0)
 
 	// Weekly stats
 	dc.SetRGB(1, 1, 1)

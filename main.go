@@ -99,6 +99,8 @@ func main() {
 				commands.StatusCommand(s, i)
 			case "counting":
 				commands.CountingCommand(s, i)
+			case "dm":
+				commands.DMCommand(s, i)
 			}
 		}
 	})

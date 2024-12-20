@@ -693,6 +693,19 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
+			Name:                     "dm",
+			Description:              "Send a direct message to a user",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionAdministrator}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "user",
+					Description: "User to send the message to",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Required:    true,
+				},
+			},
+		},
+		{
 			Name: "Say Hello",
 			Type: discordgo.MessageApplicationCommand,
 		},
