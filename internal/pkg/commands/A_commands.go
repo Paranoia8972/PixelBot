@@ -718,14 +718,6 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 				},
 			},
 		},
-		{
-			Name: "Say Hello",
-			Type: discordgo.MessageApplicationCommand,
-		},
-		{
-			Name: "restart",
-			Type: discordgo.MessageApplicationCommand,
-		},
 	}
 
 	commands := make([]*discordgo.ApplicationCommand, len(Commands))
