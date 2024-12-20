@@ -41,6 +41,7 @@ func main() {
 	dg.AddHandler(commands.GiveawayInteractionHandler)
 	dg.AddHandler(commands.HandleVoiceStateUpdate)
 	dg.AddHandler(events.MessageCreate)
+	dg.AddHandler(commands.HandleCountingMessage)
 
 	err = dg.Open()
 	if err != nil {
@@ -96,6 +97,8 @@ func main() {
 				commands.LevelingCommand(s, i)
 			case "status":
 				commands.StatusCommand(s, i)
+			case "counting":
+				commands.CountingCommand(s, i)
 			}
 		}
 	})

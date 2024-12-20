@@ -663,6 +663,36 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 			},
 		},
 		{
+			Name:                     "counting",
+			Description:              "Manage the counting game channel",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageChannels}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "set",
+					Description: "Set the counting channel",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "channel",
+							Description: "Channel to use for counting",
+							Type:        discordgo.ApplicationCommandOptionChannel,
+							Required:    true,
+						},
+					},
+				},
+				{
+					Name:        "get",
+					Description: "Get the current counting channel",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+				{
+					Name:        "delete",
+					Description: "Delete the counting channel",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+			},
+		},
+		{
 			Name: "Say Hello",
 			Type: discordgo.MessageApplicationCommand,
 		},
