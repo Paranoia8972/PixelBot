@@ -106,7 +106,7 @@ func GiveLevelRewards(s *discordgo.Session, guildID string, level int) {
 	}
 
 	if roleID == "" {
-		color := 0x00FF00
+		color := 0x248045
 		perms := int64(discordgo.PermissionSendMessages)
 		hoist := true
 		newRole, err := s.GuildRoleCreate(guildID, &discordgo.RoleParams{

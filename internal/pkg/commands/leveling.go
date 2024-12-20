@@ -268,7 +268,7 @@ func SetChannelRequirementCommand(s *discordgo.Session, i *discordgo.Interaction
 	}
 
 	if roleID == "" {
-		color := 0x00FF00
+		color := 0x248045
 		perms := int64(discordgo.PermissionSendMessages)
 		hoist := true
 
