@@ -13,6 +13,7 @@ import (
 	"github.com/Paranoia8972/PixelBot/internal/db"
 	"github.com/Paranoia8972/PixelBot/internal/events"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/games"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/moderation"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/transcript"
 	"github.com/bwmarrin/discordgo"
@@ -103,6 +104,8 @@ func main() {
 				commands.DMCommand(s, i)
 			case "dmlog":
 				commands.DMLogCommand(s, i)
+			case "sticky":
+				commands.StickyCommand(s, i)
 			}
 		}
 	})
@@ -121,6 +124,9 @@ func main() {
 				if strings.HasPrefix(i.MessageComponentData().CustomID, "advent_") {
 					commands.HandleAdventButton(s, i)
 				}
+				if strings.HasPrefix(i.MessageComponentData().CustomID, "2048_") {
+					games.HandleGame2048Button(s, i)
+				}
 			}
 		case discordgo.InteractionModalSubmit:
 			switch {
@@ -130,6 +136,8 @@ func main() {
 				commands.EditCommand(s, i)
 			case strings.HasPrefix(i.ModalSubmitData().CustomID, "dm_modal_"):
 				commands.DMCommand(s, i)
+			case i.ModalSubmitData().CustomID == "sticky_modal":
+				commands.StickyCommand(s, i)
 			default:
 				commands.TicketModalSubmitHandler(s, i)
 			}
@@ -148,6 +156,10 @@ func main() {
 				commands.SayHello(s, i)
 			}
 		}
+	})
+
+	dg.AddHandler(func(s *discordgo.Session, m *discordgo.MessageCreate) {
+		commands.HandleStickyMessage(s, m)
 	})
 
 	// start transcript server in goroutine

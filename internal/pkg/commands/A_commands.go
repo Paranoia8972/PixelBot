@@ -718,6 +718,36 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 				},
 			},
 		},
+		{
+			Name:                     "sticky",
+			Description:              "Create a sticky message in the current channel",
+			DefaultMemberPermissions: &[]int64{discordgo.PermissionManageMessages}[0],
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "create",
+					Description: "Create a sticky message",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+				{
+					Name:        "list",
+					Description: "List all sticky messages",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+				},
+				{
+					Name:        "remove",
+					Description: "Remove the sticky message",
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Options: []*discordgo.ApplicationCommandOption{
+						{
+							Name:        "message_id",
+							Description: "ID of the message to make sticky",
+							Type:        discordgo.ApplicationCommandOptionString,
+							Required:    true,
+						},
+					},
+				},
+			},
+		},
 	}
 
 	commands := make([]*discordgo.ApplicationCommand, len(Commands))
