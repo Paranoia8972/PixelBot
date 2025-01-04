@@ -179,7 +179,8 @@ func rerollGiveaway(s *discordgo.Session, i *discordgo.InteractionCreate, option
 
 	selectWinners(&giveaway)
 
-	s.ChannelMessageSend(giveaway.ChannelID, "Giveaway has been rerolled!")
+	winners := selectWinners(&giveaway)
+	s.ChannelMessageSend(giveaway.ChannelID, "Giveaway has been rerolled!\nThe new winners are: "+formatWinners(winners))
 
 	RespondWithMessage(s, i, "Giveaway rerolled!")
 }
