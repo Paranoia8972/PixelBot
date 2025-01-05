@@ -748,6 +748,18 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 				},
 			},
 		},
+		{
+			Name:        "tictactoe",
+			Description: "Start a game of Tic Tac Toe",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "user",
+					Description: "User to play against",
+					Type:        discordgo.ApplicationCommandOptionUser,
+					Required:    true,
+				},
+			},
+		},
 	}
 
 	commands := make([]*discordgo.ApplicationCommand, len(Commands))

@@ -13,6 +13,7 @@ import (
 	"github.com/Paranoia8972/PixelBot/internal/db"
 	"github.com/Paranoia8972/PixelBot/internal/events"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/games"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/moderation"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/transcript"
 	"github.com/bwmarrin/discordgo"
@@ -105,6 +106,8 @@ func main() {
 				commands.DMLogCommand(s, i)
 			case "sticky":
 				commands.StickyCommand(s, i)
+			case "tictactoe":
+				games.CreateTicTacToeCommand(s, i)
 			}
 		}
 	})
@@ -122,6 +125,12 @@ func main() {
 			default:
 				if strings.HasPrefix(i.MessageComponentData().CustomID, "advent_") {
 					commands.HandleAdventButton(s, i)
+				}
+				if strings.HasPrefix(i.MessageComponentData().CustomID, "2048_") {
+					games.HandleGame2048Button(s, i)
+				}
+				if strings.HasPrefix(i.MessageComponentData().CustomID, "tictactoe_") {
+					games.HandleTicTacToeButton(s, i)
 				}
 			}
 		case discordgo.InteractionModalSubmit:
