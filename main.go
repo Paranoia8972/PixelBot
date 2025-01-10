@@ -42,7 +42,8 @@ func main() {
 	dg.AddHandler(commands.GiveawayInteractionHandler)
 	dg.AddHandler(commands.HandleVoiceStateUpdate)
 	dg.AddHandler(events.MessageCreate)
-	dg.AddHandler(commands.HandleCountingMessage)
+	dg.AddHandler(games.HandleCountingMessage)
+	dg.AddHandler(games.CountingDeleteHandler)
 
 	err = dg.Open()
 	if err != nil {
@@ -99,7 +100,7 @@ func main() {
 			case "status":
 				commands.StatusCommand(s, i)
 			case "counting":
-				commands.CountingCommand(s, i)
+				games.CountingCommand(s, i)
 			case "dm":
 				commands.DMCommand(s, i)
 			case "dmlog":

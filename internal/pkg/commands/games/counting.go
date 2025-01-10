@@ -1,4 +1,4 @@
-package commands
+package games
 
 import (
 	"context"
@@ -16,6 +16,8 @@ type CountingChannel struct {
 	ChannelID    string `bson:"channel_id"`
 	LastCount    int    `bson:"last_count"`
 	LastCountUID string `bson:"last_count_uid"`
+	LastMsgID    string `bson:"last_msg_id"`
+	LastAuthorID string `bson:"last_author_id"`
 }
 
 func CountingCommand(s *discordgo.Session, i *discordgo.InteractionCreate) {
@@ -103,9 +105,26 @@ func HandleCountingMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	s.AddHandler(func(s *discordgo.Session, mrd *discordgo.MessageDeleteBulk) {
+		for _, id := range mrd.Messages {
+			if id == m.ID {
+				s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("❌ %s deleted their number! Counting continues from %d.",
+					m.Author.Mention(), channel.LastCount))
+				return
+			}
+		}
+	})
+
+	s.AddHandler(func(s *discordgo.Session, md *discordgo.MessageDelete) {
+		if md.ID == channel.LastMsgID && md.ID != m.ID {
+			s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("❌ Someone deleted the number %d! Counting continues from %d.",
+				channel.LastCount, channel.LastCount))
+		}
+	})
+
 	if channel.LastCountUID == m.Author.ID {
 		s.ChannelMessageDelete(m.ChannelID, m.ID)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("❌ %s, you can't count twice in a row!",
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("❌ %s, you can't count twice in a row! Wait for someone else to count.",
 			m.Author.Mention()))
 		return
 	}
@@ -118,8 +137,8 @@ func HandleCountingMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if number != channel.LastCount+1 {
 		s.ChannelMessageDelete(m.ChannelID, m.ID)
-		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("❌ %s tried to count %d, but we were at %d! The count has been reset to 1.",
-			m.Author.Mention(), number, channel.LastCount))
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("❌ %s counted %d but the next number should have been %d! Counting restarted from 1.",
+			m.Author.Mention(), number, channel.LastCount+1))
 
 		_, err = db.GetCollection(cfg.DBName, "counting_channels").UpdateOne(
 			context.TODO(),
@@ -127,6 +146,8 @@ func HandleCountingMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			bson.M{"$set": bson.M{
 				"last_count":     0,
 				"last_count_uid": "",
+				"last_msg_id":    "",
+				"last_author_id": "",
 			}},
 		)
 		if err != nil {
@@ -135,12 +156,16 @@ func HandleCountingMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
+	s.MessageReactionAdd(m.ChannelID, m.ID, "✅")
+
 	_, err = db.GetCollection(cfg.DBName, "counting_channels").UpdateOne(
 		context.TODO(),
 		bson.M{"guild_id": m.GuildID},
 		bson.M{"$set": bson.M{
 			"last_count":     number,
 			"last_count_uid": m.Author.ID,
+			"last_msg_id":    m.ID,
+			"last_author_id": m.Author.ID,
 		}},
 	)
 
@@ -149,5 +174,37 @@ func HandleCountingMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	s.MessageReactionAdd(m.ChannelID, m.ID, "✅")
+	if number%1000 == 0 {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("🎊 %s reached %d! What an achievement!",
+			m.Author.Mention(), number))
+	} else if number%500 == 0 {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("🎯 %s reached %d! Halfway to the next thousand!",
+			m.Author.Mention(), number))
+	} else if number%250 == 0 {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("⭐ %s reached %d! Keep it up!",
+			m.Author.Mention(), number))
+	} else if number%100 == 0 {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("💯 %s reached %d! Nice work!",
+			m.Author.Mention(), number))
+		s.MessageReactionAdd(m.ChannelID, m.ID, "✅")
+	}
+}
+
+func CountingDeleteHandler(s *discordgo.Session, md *discordgo.MessageDelete) {
+	var channel CountingChannel
+	err := db.GetCollection(cfg.DBName, "counting_channels").FindOne(
+		context.TODO(),
+		bson.M{"channel_id": md.ChannelID},
+	).Decode(&channel)
+	if err != nil {
+		return
+	}
+
+	if md.ID == channel.LastMsgID {
+		deletedNumber := channel.LastCount
+		nextNumber := deletedNumber + 1
+
+		s.ChannelMessageSend(md.ChannelID, fmt.Sprintf("❌ <@%s> deleted their number %d! The next number is %d.",
+			channel.LastAuthorID, deletedNumber, nextNumber))
+	}
 }
