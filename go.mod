@@ -27,6 +27,7 @@ require (
 
 require (
 	github.com/bwmarrin/dgvoice v0.0.0-20210225172318-caaac756e02e
+	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.17.0
 	github.com/fogleman/gg v1.3.0
 	github.com/gorilla/websocket v1.5.3 // indirect

@@ -760,6 +760,18 @@ func RegisterCommands(s *discordgo.Session, cfg *config.Config) {
 				},
 			},
 		},
+		{
+			Name:        "deepfry",
+			Description: "Deepfries an image",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Name:        "image",
+					Description: "Image to deepfry",
+					Type:        discordgo.ApplicationCommandOptionAttachment,
+					Required:    true,
+				},
+			},
+		},
 	}
 
 	commands := make([]*discordgo.ApplicationCommand, len(Commands))

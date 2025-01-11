@@ -13,6 +13,7 @@ import (
 	"github.com/Paranoia8972/PixelBot/internal/db"
 	"github.com/Paranoia8972/PixelBot/internal/events"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands"
+	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/fun"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/games"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/commands/moderation"
 	"github.com/Paranoia8972/PixelBot/internal/pkg/transcript"
@@ -109,6 +110,8 @@ func main() {
 				commands.StickyCommand(s, i)
 			case "tictactoe":
 				games.CreateTicTacToeCommand(s, i)
+			case "deepfry":
+				fun.DeepfryCommand(s, i)
 			}
 		}
 	})
