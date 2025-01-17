@@ -1,8 +1,8 @@
 build:
-    go build -o bin/PixelBot
+	go build -o bin/PixelBot
 
 clean:
-    rm -f bin/bot
+	rm -f bin/PixelBot
 
 run: build
-    ./bin/PixelBot
+	./bin/PixelBot
