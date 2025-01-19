@@ -126,9 +126,9 @@ func main() {
 				if strings.HasPrefix(i.MessageComponentData().CustomID, "advent_") {
 					commands.HandleAdventButton(s, i)
 				}
-				if strings.HasPrefix(i.MessageComponentData().CustomID, "2048_") {
-					games.HandleGame2048Button(s, i)
-				}
+				// if strings.HasPrefix(i.MessageComponentData().CustomID, "2048_") {
+				// 	games.HandleGame2048Button(s, i)
+				// }
 				if strings.HasPrefix(i.MessageComponentData().CustomID, "tictactoe_") {
 					games.HandleTicTacToeButton(s, i)
 				}
