@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -58,14 +60,29 @@ type TranscriptMessage struct {
 	Username       string       `json:"username"`
 	Embeds         []Embed      `json:"embeds"`
 	Reactions      []Reactions  `json:"reactions"`
+	ChannelID      string       `json:"channel_id"`
+	MessageID      string       `json:"message_id"`
 }
 
 type TranscriptData struct {
 	Transcript []TranscriptMessage `json:"transcript"`
 }
 
+type Message struct {
+	Username       string       `json:"username"`
+	Pfp            string       `json:"pfp"`
+	MessageContent string       `json:"message_content"`
+	Timestamp      int64        `json:"timestamp"`
+	Embeds         []Embed      `json:"embeds"`
+	Attachments    []Attachment `json:"attachments"`
+	Reactions      []Reactions  `json:"reactions"`
+	ChannelID      string       `json:"channel_id"`
+	MessageID      string       `json:"message_id"`
+}
+
 func StartTranscriptServer() {
 	http.HandleFunc("/ticket", TranscriptServer)
+	http.HandleFunc("/attachments/", ServeAttachment)
 	http.Handle("/downloads/", http.StripPrefix("/downloads/", http.FileServer(http.Dir("downloads"))))
 	color.Green("Transcript server is running on http://localhost:" + Cfg.Port + "/ticket | https://" + Cfg.TranscriptUrl + "/ticket")
 	log.Fatal(http.ListenAndServe(":"+Cfg.Port, nil))
@@ -133,13 +150,19 @@ func TranscriptServer(w http.ResponseWriter, r *http.Request) {
 			}
 			if len(msg.Attachments) > 0 {
 				for _, attachment := range msg.Attachments {
+					savedFilename, err := downloadAttachment(attachment.URL, msg.ChannelID, msg.MessageID, attachment.Filename)
+					if err != nil {
+						log.Printf("Error downloading attachment: %v", err)
+						continue
+					}
+
 					if strings.HasPrefix(attachment.Type, "image/") {
 						messagesHTML += `<div class="attachment">
-							<img src="` + attachment.URL + `" alt="` + attachment.Filename + `" />
+							<img src="/attachments/` + savedFilename + `" alt="` + attachment.Filename + `" />
 						</div>`
 					} else {
 						messagesHTML += `<div class="attachment">
-							<a href="` + attachment.URL + `" download>` + attachment.Filename + `</a>
+							<a href="/attachments/` + savedFilename + `" download>` + attachment.Filename + `</a>
 						</div>`
 					}
 				}
@@ -181,13 +204,19 @@ func TranscriptServer(w http.ResponseWriter, r *http.Request) {
 			}
 			if len(msg.Attachments) > 0 {
 				for _, attachment := range msg.Attachments {
+					savedFilename, err := downloadAttachment(attachment.URL, msg.ChannelID, msg.MessageID, attachment.Filename)
+					if err != nil {
+						log.Printf("Error downloading attachment: %v", err)
+						continue
+					}
+
 					if attachment.Type == "image/jpeg" || attachment.Type == "image/png" || attachment.Type == "image/gif" {
 						messagesHTML += `<div class="attachment">
-							<img src="` + attachment.URL[:strings.Index(attachment.URL, "?")] + `" alt="` + attachment.Filename + `" />
+							<img src="/attachments/` + savedFilename + `" alt="` + attachment.Filename + `" />
 						</div>`
 					} else {
 						messagesHTML += `<div class="attachment">
-							<a href="` + attachment.URL + `" download>` + attachment.Filename + `</a>
+							<a href="/attachments/` + savedFilename + `" download>` + attachment.Filename + `</a>
 						</div>`
 					}
 				}
@@ -253,4 +282,53 @@ func getTranscript(id string) ([]byte, error) {
 	}
 
 	return result.Transcript, nil
+}
+
+func downloadAttachment(url, channelID, messageID, filename string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Create attachments directory if it doesn't exist
+	if err := os.MkdirAll("attachments", 0755); err != nil {
+		return "", err
+	}
+
+	// Create a unique filename using channel and message IDs
+	savedFilename := fmt.Sprintf("%s-%s-%s", channelID, messageID, filename)
+	filePath := filepath.Join("attachments", savedFilename)
+
+	file, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return savedFilename, nil
+}
+
+func ServeAttachment(w http.ResponseWriter, r *http.Request) {
+	// Extract filename from URL path
+	filename := strings.TrimPrefix(r.URL.Path, "/attachments/")
+	if filename == "" {
+		http.Error(w, "Missing filename", http.StatusBadRequest)
+		return
+	}
+
+	// Ensure the path is safe and within attachments directory
+	filePath := filepath.Join("attachments", filepath.Clean(filename))
+	if !strings.HasPrefix(filePath, filepath.Clean("attachments/")) {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+
+	// Serve the file
+	http.ServeFile(w, r, filePath)
 }
