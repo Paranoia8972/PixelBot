@@ -20,7 +20,7 @@ jobs:
 
       - name: Clone Paranoia8972/PixelBot
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git clone https://github.com/Paranoia8972/PixelBot.git
           cd PixelBot
