@@ -1,40 +1,35 @@
-name: Push to OnThePixel-net/PixelBot
+name: Mirror to OnThePixel-net/PixelBot
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  push:
+  mirror:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Git
         run: |
-          git config --global user.name "Paranoia8972"
-          git config --global user.email "contact@encryptopia.dev"
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
 
-      - name: Clone Paranoia8972/PixelBot
+      - name: Push to mirror repository
+        env:
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          git clone https://github.com/Paranoia8972/PixelBot.git
-          cd PixelBot
-          git remote rm origin
-          git remote add origin https://github.com/OnThePixel-net/PixelBot.git
-
-      - name: Edit README.md
-        run: |
-          cd PixelBot
           echo -e "## Mirror Repository\n\nThis is a mirror of [Paranoia8972/PixelBot](https://github.com/Paranoia8972/PixelBot). Please report issues and open pull requests there.\n\n$(cat README.md)" > README.md
 
-      - name: Push changes
-        run: |
-          cd PixelBot
           git add README.md
           git commit -m "Update README.md to indicate mirror repository"
-          git push origin main --force
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+
+          git remote add mirror https://${PERSONAL_ACCESS_TOKEN}@github.com/OnThePixel-net/PixelBot.git
+          git push mirror main
+
+          echo "::notice::Successfully mirrored repository to OnThePixel-net/PixelBot"
