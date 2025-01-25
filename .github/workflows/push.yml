@@ -15,12 +15,10 @@ jobs:
 
       - name: Set up Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "Paranoia8972"
+          git config --global user.email "contact@encryptopia.dev"
 
       - name: Clone Paranoia8972/PixelBot
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git clone https://github.com/Paranoia8972/PixelBot.git
           cd PixelBot
@@ -38,3 +36,5 @@ jobs:
           git add README.md
           git commit -m "Update README.md to indicate mirror repository"
           git push origin main --force
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
