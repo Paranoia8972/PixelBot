@@ -22,7 +22,7 @@ jobs:
 
       - name: Push to mirror repository
         env:
-          GH_PAT: ${{ secrets.GH_PAT }}
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           echo -e "## Mirror Repository\n\nThis is a mirror of [Paranoia8972/PixelBot](https://github.com/Paranoia8972/PixelBot). Please report issues and open pull requests there.\n\n$(cat README.md)" > README.md
 
